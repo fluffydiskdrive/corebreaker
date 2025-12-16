@@ -36,8 +36,8 @@ void spawn_paddle()
     paddle_body_def.position = paddle_pos.to_cartesian_b2();
     paddle_body_def.rotation = b2MakeRot(45.0f * DEG2RAD);
 
-    auto paddle_data = CustomBodyData{COLLISION_PADDLE};
-    paddle_body_def.userData = &paddle_data;
+    auto* paddle_data = new CustomBodyData{COLLISION_PADDLE};
+    paddle_body_def.userData = paddle_data;
 
     b2ShapeDef paddle_shape_def = b2DefaultShapeDef();
     paddle_shape_def.enableContactEvents = true;

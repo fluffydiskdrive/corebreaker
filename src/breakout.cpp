@@ -16,7 +16,6 @@ Camera2D camera = Camera2D();
 void update(float delta)
 {
     b2World_Step(world_id, delta, 4);
-    // TODO
 
     if (IsKeyPressed(KEY_ESCAPE)) {
         game_state = paused_state;
@@ -36,6 +35,7 @@ void update(float delta)
     }
     move_ball();
     contact_ball();
+    destroy_boxes();
 
 
 
@@ -46,13 +46,10 @@ void update(float delta)
         load_level(1);
         PlaySound(win_sound);
     }
-
-    destroy_bodies();
 }
 
 void draw()
 {
-    // TODO
 
     draw_level();
     draw_paddle();
@@ -62,9 +59,7 @@ void draw()
 
 void init_game()
 {
-    world_def = b2DefaultWorldDef();
-    world_def.gravity = {0, 0};
-    world_id = b2CreateWorld(&world_def);
+
 
 
     camera.target = {0, 0};

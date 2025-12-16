@@ -34,8 +34,8 @@ void spawn_ball()
     ball_body_def.position = {ball_pos.x, ball_pos.y};
     ball_body_def.rotation = b2MakeRot(0.0f);
 
-    auto ball_data = CustomBodyData{COLLISION_BALL};
-    ball_body_def.userData = &ball_data;
+    auto* ball_data = new CustomBodyData{COLLISION_BALL};
+    ball_body_def.userData = ball_data;
 
     b2ShapeDef ball_shape_def = b2DefaultShapeDef();
     ball_shape_def.enableContactEvents = true;
@@ -81,10 +81,9 @@ void contact_ball()
     b2ContactEvents ball_contact_events = b2World_GetContactEvents(world_id);
     for (int i = 0; i < ball_contact_events.endCount; ++i) {
         b2ContactEndTouchEvent* end_touch_event = ball_contact_events.endEvents + i;
-        if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdB)))->_collision_type == COLLISION_BOX)
-        {
-            auto curr_body = b2Shape_GetBody(end_touch_event->shapeIdB);
-            for (auto j : bodies) {
+        if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type == COLLISION_BOX){
+            auto curr_body = b2Shape_GetBody(end_touch_event->shapeIdA);
+            for (auto &j : boxes) {
                 if (j._body_id.index1 == curr_body.index1 && j._body_id.generation == curr_body.generation && j._body_id.world0 == curr_body.world0) {
                     j.to_delete = true;
                 }

@@ -12,17 +12,17 @@
 
 #include <vector>
 
-std::vector<Body> boxes;
+
 
 Body init_box(Vector2 position)
 {
-    auto box_data = CustomBodyData { COLLISION_BOX };
+    auto* box_data = new CustomBodyData { COLLISION_BOX };
     b2BodyDef box_def = b2DefaultBodyDef();
 
     box_def.type = b2_staticBody;
     box_def.position = V2_to_b2V2(position);
     box_def.rotation = b2MakeRot(0.0f);
-    box_def.userData = &box_data;
+    box_def.userData = box_data;
 
     b2ShapeDef box_shape_def = b2DefaultShapeDef();
     box_shape_def.enableContactEvents = true;
@@ -37,6 +37,13 @@ Body init_box(Vector2 position)
 
 void load_level(const int offset)
 {
+    if (current_level) {
+        unload_level();
+    }
+    world_def = b2DefaultWorldDef();
+    world_def.gravity = {0, 0};
+    world_id = b2CreateWorld(&world_def);
+
     current_level_index += offset;
     if (current_level_index >= level_count) {
         game_state = victory_state;
@@ -47,9 +54,7 @@ void load_level(const int offset)
         return;
     }
 
-    if (current_level) {
-        unload_level();
-    }
+
 
 
     const size_t rows = levels[current_level_index].rows;
@@ -66,7 +71,7 @@ void load_level(const int offset)
 
                 auto box = init_box({((static_cast<float>(columns) / 2) - column) * 2 - 1.0f, ((static_cast<float>(rows) / -2) + row) * 2 + 1.0f});
                 boxes.push_back(box);
-                bodies.push_back(box);
+                //bodies.push_back(box);
                 ++current_level_blocks;
             }
         }
@@ -81,12 +86,15 @@ void load_level(const int offset)
 
 void unload_level()
 {
+    b2DestroyWorld(world_id);
     delete[] current_level->data;
     delete current_level;
     bodies.clear();
     paddle_pos = {0, 0};
     ball_pos = {0, 0};
     boxes.clear();
+    //world_id = b2CreateWorld(&world_def);
+
 }
 
 bool is_inside_level(const int row, const int column)
@@ -111,10 +119,12 @@ void level_draw()
     }
 }
 
-void destroy_bodies()
+void destroy_boxes()
 {
     for (auto i = boxes.begin(); i != boxes.end(); ) {
         if (i->to_delete) {
+            b2DestroyBody(i->_body_id);
+            --current_level_blocks;
             i = boxes.erase(i);
         } else ++i;
     }

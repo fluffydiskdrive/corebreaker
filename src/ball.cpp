@@ -6,6 +6,7 @@
 #include "raylib.h"
 
 #include <cmath>
+#include <iostream>
 #include <numbers>
 
 
@@ -25,7 +26,8 @@ void spawn_ball()
 //         }
 //     }
 // outer_loop_end:;
-    ball_pos = Vector2p{paddle_pos.dist - 5, paddle_pos.ang_d}.to_cartesian();
+
+    ball_pos = (Vector2p{paddle_pos.dist - 2.0f, paddle_pos.ang_d}).to_cartesian();
     //ball_pos = Vector2(0.83,-paddle_pos.dist - 20);
     //ball_pos = Vector2(-paddle_pos.dist - 20, 0);
     b2BodyDef ball_body_def = b2DefaultBodyDef();
@@ -46,10 +48,14 @@ void spawn_ball()
 
     b2CreateCircleShape(ball_id, &ball_shape_def, &ball_circle);
     b2Body_SetBullet(ball_id, true);
-    b2Body_SetLinearVelocity(ball_id, Vector2p{-1, 0}.to_cartesian_b2());
+    //b2Body_SetLinearVelocity(ball_id, Vector2p{-1, 90.0f}.to_cartesian_b2());
+
+    //ball_pos = b2V2_to_V2(b2Body_GetPosition(ball_id));
 
     bodies.emplace_back(ball_id, &ball_texture);
     ball = bodies.back();
+    //ball_pos = b2V2_to_V2(b2Body_GetPosition(ball._body_id));
+    ball._graph_position = ball_pos;
 }
 
 void move_ball()
@@ -62,6 +68,7 @@ void move_ball()
     //
     //
     // ball_pos = next_ball_pos;
+
     ball_pos = b2V2_to_V2(b2Body_GetPosition(ball._body_id));
     b2Vec2 ball_vel = b2Body_GetLinearVelocity(ball._body_id);
     float ball_vel_mag = b2Length(ball_vel);
@@ -70,25 +77,69 @@ void move_ball()
     ball._graph_position = ball_pos;
 }
 
+std::vector<Body> arrows;
+Body arrow;
+inline constexpr float arrow_speed = 2;
+
+void choose_dir()
+{
+    //Vector2p arrow_pos = {1.5f, 270.0f};
+    Vector2p arrow_pos = to_polar(ball_pos);
+    if (arrows.empty()){
+
+        // b2BodyDef arrow_body_def = b2DefaultBodyDef();
+        //
+        // // auto* arrow_data = new CustomBodyData{COLLISION_PADDLE};
+        // // arrow_body_def.userData = arrow_data;
+        //
+        // arrow_body_def.type = b2_staticBody;
+        // arrow_body_def.position = arrow_pos.to_cartesian_b2();
+        // b2ShapeDef arrow_shape_def = b2DefaultShapeDef();
+        // b2Polygon arrow_polygon = b2MakeBox(0.4f, 2.4f);
+        //
+        //b2BodyId arrow_id;
+        // b2CreatePolygonShape(arrow_id, &arrow_shape_def, &arrow_polygon);
+        arrows.emplace_back(&arrow_texture);
+        arrow = arrows.back();
+
+    }
+
+    const Vector2 arrow_relative_pos = Vector2p{5, arrow._graph_rotation_d - 90}.to_cartesian();
+
+    arrow._graph_position = Vector2{ball_pos.x + arrow_relative_pos.x, ball_pos.y + arrow_relative_pos.y};
+
+
+    arrow.draw();
+
+    //auto arrow_pos = to_polar(b2Body_GetPosition(arrow._body_id));
+    if (IsKeyDown(KEY_A)) {
+        // b2Body_SetTransform(arrow._body_id, (arrow_pos + Vector2p{0, -paddle_speed / 10}).to_cartesian_b2(), b2MakeRot(DEG2RAD * (arrow_pos.ang_d + paddle_speed)));
+        arrow._graph_rotation_d -= arrow_speed;
+        if (arrow._graph_rotation_d <= -45) arrow._graph_rotation_d = -45;
+    }
+    if (IsKeyDown(KEY_D)) {
+        // b2Body_SetTransform(arrow._body_id, (arrow_pos + Vector2p{0, paddle_speed / 10}).to_cartesian_b2(), b2MakeRot(DEG2RAD * (arrow_pos.ang_d - paddle_speed)));
+        arrow._graph_rotation_d += arrow_speed;
+        if (arrow._graph_rotation_d >= 45) arrow._graph_rotation_d = 45;
+    }
+    if (IsKeyDown(KEY_ENTER)) {
+        b2Body_SetLinearVelocity(ball._body_id, b2Vec2{-std::cosf(DEG2RAD * (arrow._graph_rotation_d + 90.0f)), -std::sinf(DEG2RAD * (arrow._graph_rotation_d + 90.0f))});
+        std::cout << arrow._graph_rotation_d;
+        //b2Body_Disable(arrow._body_id);
+        //b2Body_SetTransform(arrow._body_id, {100, 100}, b2MakeRot(0));
+        arrows.clear();
+        game_state = in_game_state;
+    }
+    PollInputEvents();
+
+
+}
+
+
 bool is_ball_inside_level()
 {
     // return is_inside_level(static_cast<int>(ball_pos.y), static_cast<int>(ball_pos.x));
     return to_polar(ball_pos).dist <= paddle_pos.dist;
 }
 
-void contact_ball()
-{
-    b2ContactEvents ball_contact_events = b2World_GetContactEvents(world_id);
-    for (int i = 0; i < ball_contact_events.endCount; ++i) {
-        b2ContactEndTouchEvent* end_touch_event = ball_contact_events.endEvents + i;
-        if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type == COLLISION_BOX){
-            auto curr_body = b2Shape_GetBody(end_touch_event->shapeIdA);
-            for (auto &j : boxes) {
-                if (j._body_id.index1 == curr_body.index1 && j._body_id.generation == curr_body.generation && j._body_id.world0 == curr_body.world0) {
-                    j.to_delete = true;
-                }
-            }
-        }
-    }
 
-}

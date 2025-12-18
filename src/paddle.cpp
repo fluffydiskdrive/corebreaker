@@ -29,7 +29,7 @@ void spawn_paddle()
     //         }
     //     }
     // }
-    paddle_pos = paddle_pos + Vector2p{10.0f, 0.0f};
+    paddle_pos = Vector2p{29.0f, 90.0f};
     b2BodyDef paddle_body_def = b2DefaultBodyDef();
 
     paddle_body_def.type = b2_staticBody;

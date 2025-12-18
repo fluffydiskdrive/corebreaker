@@ -19,7 +19,11 @@ constexpr int BLOCK_SIZE = 16;
 inline b2WorldDef world_def;
 inline b2WorldId world_id;
 
+inline Camera2D camera;
+
 inline std::vector<Body> bodies;
+
+inline bool level_passed;
 
 
 struct RectangleR {
@@ -50,11 +54,21 @@ struct Vector2p {
     {
         return Vector2p{dist + other.dist, ang_d + other.ang_d};
     }
+
+    Vector2p operator- (Vector2p other) const
+    {
+        return Vector2p{dist - other.dist, ang_d - other.ang_d};
+    }
 };
 
 inline Vector2p to_polar(const Vector2 v2)
 {
-    return Vector2p{sqrtf(v2.x * v2.x + v2.y * v2.y), atan2f(v2.y, v2.x)};
+    return Vector2p{sqrtf(v2.x * v2.x + v2.y * v2.y), RAD2DEG * atan2f(v2.y, v2.x)};
+}
+
+inline Vector2p to_polar(const b2Vec2 b2v2)
+{
+    return Vector2p{sqrtf(b2v2.x * b2v2.x + b2v2.y * b2v2.y), atan2f(b2v2.y, b2v2.x)};
 }
 
 inline b2Vec2 V2_to_b2V2(const Vector2 v2)
@@ -97,23 +111,24 @@ enum game_state {
 };
 
 enum collision_type : int {
-    COLLISION_BOX = 0,
-    COLLISION_BALL = 1,
-    COLLISION_PADDLE = 2,
-    COLLISION_WALL = 3,
-    COLLISION_BONUS = 4,
+    COLLISION_BOX,
+    COLLISION_BALL,
+    COLLISION_PADDLE,
+    COLLISION_WALL,
+    COLLISION_BONUS,
+    COLLISION_CORE
 };
 
 inline char level_1_data[] = {
+    '@',' ',' ',' ','@',' ',' ',' ','@',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ','@','@','@',' ',' ',' ',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    '@',' ','@','@','!','@','@',' ','@',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    ' ',' ',' ','@','@','@',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ','@',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' '
+    '@',' ',' ',' ','@',' ',' ',' ','@'
 };
 
 inline level level_1 = {
@@ -122,22 +137,18 @@ inline level level_1 = {
 };
 
 inline char level_2_data[] = {
-    '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', '@', ' ', ' ', ' ', '@', ' ', ' ', ' ', '@', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', '@', ' ', ' ', ' ', '@', ' ', ' ', ' ', '@', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', '@', ' ', ' ', ' ', '*', ' ', ' ', ' ', '@', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', 'P', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-    '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'
+    '@',' ',' ',' ','@',' ',' ',' ','@',
+    '@',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ','@','@','@',' ',' ',' ',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    '@',' ','@','@','!','@','@',' ','@',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    ' ',' ',' ','@','@','@',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ','@',
+    '@',' ',' ',' ','@',' ',' ',' ','@'
 };
 inline level level_2 = {
-    13, 13,
+    9, 9,
     level_2_data
 };
 

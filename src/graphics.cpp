@@ -111,7 +111,7 @@ void draw_menu()
         200.0f,
         RED,
         4.0f,
-        &menu_font
+        &title_font
     };
     draw_text(game_title);
 
@@ -204,10 +204,10 @@ void draw_pause_menu()
 
     const Text paused_title = {
         "Press Escape to Resume",
-        { 0.50f, 0.50f },
-        32.0f,
+        { 0.0f, 0.0f },
+        0.5f,
         WHITE,
-        4.0f,
+        .05f,
         &menu_font
     };
     draw_text(paused_title);

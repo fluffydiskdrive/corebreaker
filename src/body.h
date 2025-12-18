@@ -12,10 +12,12 @@ struct Body
     bool to_delete;
 
     Vector2 _graph_position;
+    float _graph_rotation_d;
     Texture2D *_tex;
 
     Body();
     Body(b2BodyId body_id, Texture2D *tex);
+    Body(Texture2D *tex);
 
 
     void draw() const;

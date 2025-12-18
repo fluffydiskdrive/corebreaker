@@ -5,7 +5,7 @@
 #include "raylib.h"
 
 inline constexpr Vector2 paddle_size = { 3.0f, 1.0f };
-inline constexpr float paddle_speed = 1.0f;
+inline float PADDLE_SPEED = 1.0f;
 
 inline Vector2 pp_cart;
 

@@ -11,28 +11,32 @@
 
 //-----------------------------------------A
 
-Camera2D camera = Camera2D();
+
 
 void update(float delta)
 {
     b2World_Step(world_id, delta, 4);
 
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_ESCAPE) && game_state == in_game_state) {
         game_state = paused_state;
     }
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-        move_paddle(paddle_speed);
+        move_paddle(PADDLE_SPEED);
     }
     if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-        move_paddle(-paddle_speed);
+        move_paddle(-PADDLE_SPEED);
     }
 
     if (IsKeyDown(KEY_BACKSLASH)) {
         Vector2 o = paddle._graph_position;
         auto i = pp_cart;
-
-
     }
+
+    // switch (game_state) {
+    // case menu_state: while (!IsKeyDown(KEY_ENTER)){draw_menu();} game_state = in_game_state; break;
+    // case paused_state: while (!IsKeyDown(KEY_ESCAPE)){draw_menu();} game_state = in_game_state; break;
+    //     default:;
+    // }
     move_ball();
     contact_ball();
     destroy_boxes();
@@ -40,32 +44,61 @@ void update(float delta)
 
 
     if (!is_ball_inside_level()) {
+        game_state = dir_choice_state;
         load_level();
         PlaySound(lose_sound);
-    } else if (current_level_blocks == 0) {
+    } else if (level_passed) {
+        game_state = dir_choice_state;
         load_level(1);
         PlaySound(win_sound);
+        level_passed = false;
+
     }
 }
 
 void draw()
 {
+    // switch (game_state) {
+    // case in_game_state:{
+        DrawCircleV({0,0}, paddle_pos.dist + 0.05, GRAY);
+        DrawCircleV({0,0}, paddle_pos.dist - 0.05, BLACK);
+        draw_level();
+        draw_paddle();
+        draw_ball();
+        draw_ui();
+    // case paused_state: draw_pause_menu();
+    // }
 
-    draw_level();
-    draw_paddle();
-    draw_ball();
-    draw_ui();
 }
 
 void init_game()
 {
-
-
-
+    camera = Camera2D();
     camera.target = {0, 0};
     camera.offset = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
     camera.zoom = 10.0f;
 
+    level_passed = false;
+
+    load_fonts();
+    load_textures();
+    load_level();
+    load_sounds();
+
+    game_state = dir_choice_state;
+
+}
+
+void handle_states(float delta)
+{
+    switch (game_state) {
+    case in_game_state: update(delta); break;
+    case dir_choice_state: choose_dir(); break;
+    // case paused_state: {
+    //     PollInputEvents();
+    //     if (IsKeyDown(KEY_ESCAPE)) game_state = in_game_state;
+    // }
+    }
 }
 
 int main()
@@ -76,23 +109,20 @@ int main()
 
     init_game();
 
-    load_fonts();
-    load_textures();
-    load_level();
-    load_sounds();
-
     SetExitKey(KEY_NULL);
 
     while (!WindowShouldClose()) {
         float delta = GetFrameTime();
-        update(delta);
+
 
         BeginDrawing();
         BeginMode2D(camera);
+
         //DrawRectangleV({0,0}, {10, 10}, GREEN);
-        DrawCircleV({0,0}, paddle_pos.dist + 0.05, GRAY);
-        DrawCircleV({0,0}, paddle_pos.dist - 0.05, BLACK);
+
         draw();
+        handle_states(delta);
+        //update(delta);
         EndMode2D();
 
 

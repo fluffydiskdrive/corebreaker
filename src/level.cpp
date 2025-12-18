@@ -14,9 +14,9 @@
 
 
 
-Body init_box(Vector2 position)
+Body init_box(Vector2 position, CustomBodyData* box_data)
 {
-    auto* box_data = new CustomBodyData { COLLISION_BOX };
+
     b2BodyDef box_def = b2DefaultBodyDef();
 
     box_def.type = b2_staticBody;
@@ -28,9 +28,9 @@ Body init_box(Vector2 position)
     box_shape_def.enableContactEvents = true;
     const b2Polygon box_polygon = b2MakeBox(0.8f, 0.8f);
 
-    auto box_id = b2CreateBody(world_id, &box_def);
+    const auto box_id = b2CreateBody(world_id, &box_def);
     b2CreatePolygonShape(box_id, &box_shape_def, &box_polygon);
-    auto box = Body{box_id, &block_texture};
+    auto box = Body{box_id, box_data->_collision_type == COLLISION_BOX ? &block_texture : &core_texture};
     box._graph_position = b2V2_to_V2(b2Body_GetPosition(box_id));
     return box;
 }
@@ -62,14 +62,16 @@ void load_level(const int offset)
 
     paddle_pos.dist = static_cast<float>(3.0f * sqrt((rows / 2) * (rows / 2) + (columns / 2) * (columns / 2)));
 
+
     current_level_blocks = 0;
     char* current_level_data = new char[rows * columns];
     for (int row = 0; row < rows; ++row) {
         for (int column = 0; column < columns; ++column) {
             current_level_data[row * columns + column] = levels[current_level_index].data[row * columns + column];
-            if (current_level_data[row * columns + column] == BLOCK) {
+            if (current_level_data[row * columns + column] == BLOCK || current_level_data[row * columns + column] == CORE) {
 
-                auto box = init_box({((static_cast<float>(columns) / 2) - column) * 2 - 1.0f, ((static_cast<float>(rows) / -2) + row) * 2 + 1.0f});
+                auto* box_data = new CustomBodyData { current_level_data[row * columns + column] == BLOCK ? COLLISION_BOX : COLLISION_CORE};
+                auto box = init_box({((static_cast<float>(columns) / 2) - column) * 2 - 1.0f, ((static_cast<float>(rows) / -2) + row) * 2 + 1.0f}, box_data);
                 boxes.push_back(box);
                 //bodies.push_back(box);
                 ++current_level_blocks;
@@ -128,6 +130,33 @@ void destroy_boxes()
             i = boxes.erase(i);
         } else ++i;
     }
+}
+
+void contact_ball()
+{
+    b2ContactEvents ball_contact_events = b2World_GetContactEvents(world_id);
+    for (int i = 0; i < ball_contact_events.endCount; ++i) {
+        b2ContactEndTouchEvent* end_touch_event = ball_contact_events.endEvents + i;
+        if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type == COLLISION_BOX){
+            auto curr_body = b2Shape_GetBody(end_touch_event->shapeIdA);
+            for (auto &j : boxes) {
+                if (j._body_id.index1 == curr_body.index1 && j._body_id.generation == curr_body.generation && j._body_id.world0 == curr_body.world0) {
+                    j.to_delete = true;
+                }
+            }
+            BALL_SPEED += 0.25f;
+            PADDLE_SPEED += 0.055f;
+        } else if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type == COLLISION_CORE) {
+            level_passed = true;
+            // game_state = victory_state;
+            // ClearBackground(BLACK);
+            // init_victory_menu();
+            // camera.offset = {0, 0};
+            // camera.zoom = 1.0f;
+            // draw_victory_menu();
+        }
+    }
+
 }
 
 // bool is_colliding_with_level_cell(const Vector2 pos, const Vector2 size, const char cell)

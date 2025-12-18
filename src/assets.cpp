@@ -5,6 +5,7 @@
 void load_fonts()
 {
     menu_font = LoadFontEx(ASSETS_PATH"fonts/prstartk.ttf", 256, nullptr, 0);
+    title_font = LoadFontEx(ASSETS_PATH"fonts/DaydreamDEMO.otf", 256, nullptr, 0);
 }
 
 void unload_fonts()
@@ -21,6 +22,7 @@ void load_textures()
     ball_sprite = load_sprite(ASSETS_PATH"images/ball/ball", ".png", 8, true, 10);
     ball_texture = LoadTexture(ASSETS_PATH"images/ball/ball0.png");
     core_texture = LoadTexture(ASSETS_PATH"images/core.png");
+    arrow_texture = LoadTexture(ASSETS_PATH"images/arrow.png");
 }
 
 void unload_textures()

@@ -95,6 +95,7 @@ void unload_level()
     paddle_pos = {0, 0};
     ball_pos = {0, 0};
     boxes.clear();
+    current_level = nullptr;
     //world_id = b2CreateWorld(&world_def);
 
 }

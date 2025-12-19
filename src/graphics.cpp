@@ -25,8 +25,8 @@ constexpr float screen_scale_divisor = 700.0f;
 
 constexpr size_t victory_ball_launch_degree_offset = 3;
 constexpr size_t victory_balls_count = 360 / victory_ball_launch_degree_offset;
-constexpr float victory_balls_speed = 7.0f;
-constexpr float victory_balls_size = 3.0f;
+constexpr float victory_balls_speed = 1.0f;
+constexpr float victory_balls_size = .2f;
 
 Vector2 screen_size;
 float screen_scale;
@@ -106,21 +106,21 @@ void draw_menu()
     ClearBackground(BLACK);
 
     const Text game_title = {
-        "Breakout",
-        { 0.50f, 0.50f },
-        200.0f,
-        RED,
-        4.0f,
+        "Breakout!",
+        { 0.0f, 0.0f },
+        10.0f,
+        LIGHTGRAY,
+        .18f,
         &title_font
     };
     draw_text(game_title);
 
     const Text game_subtitle = {
         "Press Enter to Start",
-        { 0.50f, 0.65f },
-        32.0f,
-        WHITE,
-        4.0f,
+        { 0.0f, 0.01f },
+        2.0f,
+        LIGHTGRAY,
+        .01f,
         &menu_font
     };
     draw_text(game_subtitle);
@@ -205,9 +205,9 @@ void draw_pause_menu()
     const Text paused_title = {
         "Press Escape to Resume",
         { 0.0f, 0.0f },
-        0.5f,
-        WHITE,
-        .05f,
+        4.0f,
+        LIGHTGRAY,
+        .06f,
         &menu_font
     };
     draw_text(paused_title);
@@ -216,21 +216,22 @@ void draw_pause_menu()
 void init_victory_menu()
 {
     for (size_t i = 0; i < victory_balls_count; ++i) {
-        victory_balls_pos[i] = { screen_size.x / 2, screen_size.y / 2 };
+        victory_balls_pos[i] = {viewport_origin.x + victory_balls_size, viewport_origin.y + victory_balls_size};
         victory_balls_vel[i] = {
-            std::cos(static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
-            std::sin(static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
+            std::cosf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
+            std::sinf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
         };
     }
+    //inited_victory_state = true;
 }
 
 void animate_victory_menu()
 {
     for (size_t i = 0; i < victory_balls_count; ++i) {
-        if (victory_balls_pos[i].x + victory_balls_vel[i].x > screen_size.x || victory_balls_pos[i].x + victory_balls_vel[i].x < 0) {
+        if (victory_balls_pos[i].x + victory_balls_vel[i].x > (viewport_origin.x + viewport_size.x) || victory_balls_pos[i].x + victory_balls_vel[i].x < viewport_origin.x) {
             victory_balls_vel[i].x *= -1.0f;
         }
-        if (victory_balls_pos[i].y + victory_balls_vel[i].y > screen_size.y || victory_balls_pos[i].y + victory_balls_vel[i].y < 0) {
+        if (victory_balls_pos[i].y + victory_balls_vel[i].y > (viewport_origin.y + viewport_size.y)|| victory_balls_pos[i].y + victory_balls_vel[i].y < viewport_origin.y) {
             victory_balls_vel[i].y *= -1.0f;
         }
         victory_balls_pos[i] = {
@@ -244,7 +245,7 @@ void draw_victory_menu()
 {
     animate_victory_menu();
 
-    DrawRectangleV({ 0.0f, 0.0f }, { screen_size.x, screen_size.y }, { 0, 0, 0, 50 });
+    DrawRectangleV(viewport_origin, viewport_size, { 0, 0, 0, 50 });
 
     for (const auto& [x, y] : victory_balls_pos) {
         DrawCircleV({ x, y }, victory_balls_size, WHITE);
@@ -252,20 +253,20 @@ void draw_victory_menu()
 
     const Text victory_title = {
         "Victory!",
-        { 0.50f, 0.50f },
-        100.0f,
+        { 0.0f, 0.0f },
+        10.0f,
         RED,
-        4.0f,
+        .06f,
         &menu_font
     };
     draw_text(victory_title);
 
     const Text victory_subtitle = {
         "Press Enter to Restart",
-        { 0.50f, 0.65f },
-        32.0f,
+        { 0.0f, 0.01f },
+        2.0f,
         WHITE,
-        4.0f,
+        .02f,
         &menu_font
     };
     draw_text(victory_subtitle);

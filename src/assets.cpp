@@ -4,8 +4,9 @@
 
 void load_fonts()
 {
-    menu_font = LoadFontEx(ASSETS_PATH"fonts/prstartk.ttf", 256, nullptr, 0);
+
     title_font = LoadFontEx(ASSETS_PATH"fonts/DaydreamDEMO.otf", 256, nullptr, 0);
+    menu_font = LoadFontEx(ASSETS_PATH"fonts/prstartk.ttf", 256, nullptr, 0);
 }
 
 void unload_fonts()

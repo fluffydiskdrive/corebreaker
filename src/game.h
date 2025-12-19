@@ -18,6 +18,9 @@ constexpr int BLOCK_SIZE = 16;
 
 inline b2WorldDef world_def;
 inline b2WorldId world_id;
+inline RenderTexture2D render_texture;
+inline Vector2 viewport_size;
+inline Vector2 viewport_origin;
 
 inline Camera2D camera;
 
@@ -125,10 +128,10 @@ inline char level_1_data[] = {
     ' ',' ',' ','@','@','@',' ',' ',' ',
     ' ',' ','@','@','@','@','@',' ',' ',
     '@',' ','@','@','!','@','@',' ','@',
-    ' ',' ','@','@','@','@','@',' ',' ',
-    ' ',' ',' ','@','@','@',' ',' ',' ',
+    ' ',' ','@','@',' ','@','@',' ',' ',
+    ' ',' ',' ','@',' ','@',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    '@',' ',' ',' ','@',' ',' ',' ','@'
+    '@',' ',' ',' ',' ',' ',' ',' ','@'
 };
 
 inline level level_1 = {
@@ -152,9 +155,9 @@ inline level level_2 = {
     level_2_data
 };
 
-inline constexpr size_t level_count = 2;
+inline constexpr size_t level_count = 1;
 inline level levels[level_count] = {
-    level_1, level_2
+    level_1//, level_2
 };
 
 inline game_state game_state = menu_state;

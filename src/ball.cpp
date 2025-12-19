@@ -35,6 +35,7 @@ void spawn_ball()
     ball_body_def.type = b2_dynamicBody;
     ball_body_def.position = {ball_pos.x, ball_pos.y};
     ball_body_def.rotation = b2MakeRot(0.0f);
+    ball_body_def.fixedRotation = true;
 
     auto* ball_data = new CustomBodyData{COLLISION_BALL};
     ball_body_def.userData = ball_data;
@@ -122,9 +123,9 @@ void choose_dir()
         arrow._graph_rotation_d += arrow_speed;
         if (arrow._graph_rotation_d >= 45) arrow._graph_rotation_d = 45;
     }
-    if (IsKeyDown(KEY_ENTER)) {
+    if (IsKeyDown(KEY_SPACE)) {
         b2Body_SetLinearVelocity(ball._body_id, b2Vec2{-std::cosf(DEG2RAD * (arrow._graph_rotation_d + 90.0f)), -std::sinf(DEG2RAD * (arrow._graph_rotation_d + 90.0f))});
-        std::cout << arrow._graph_rotation_d;
+        //std::cout << arrow._graph_rotation_d;
         //b2Body_Disable(arrow._body_id);
         //b2Body_SetTransform(arrow._body_id, {100, 100}, b2MakeRot(0));
         arrows.clear();

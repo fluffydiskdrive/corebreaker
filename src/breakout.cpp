@@ -33,8 +33,7 @@ void update(float delta)
     }
 
     if (IsKeyDown(KEY_BACKSLASH)) {
-        Vector2 o = paddle._graph_position;
-        auto i = pp_cart;
+        std::cout << "dev pause";
     }
 
     // switch (game_state) {
@@ -46,9 +45,12 @@ void update(float delta)
     contact_ball();
     destroy_boxes();
 
+    invincibility.update_powerup(delta);
+    paddle_x2.update_powerup(delta);
 
 
-    if (!is_ball_inside_level()) {
+
+    if (!is_ball_inside_level() && !invincibility._active) {
         game_state = dir_choice_state;
         load_level();
         PlaySound(lose_sound);
@@ -66,7 +68,7 @@ void draw()
     switch (game_state) {
     case dir_choice_state:
     case in_game_state:{
-        DrawCircleV({0,0}, paddle_pos.dist + 0.05, GRAY);
+        DrawCircleV({0,0}, paddle_pos.dist + 0.05, BORDER_COLOR);
         DrawCircleV({0,0}, paddle_pos.dist - 0.05, BLACK);
         draw_level();
         draw_paddle();
@@ -81,14 +83,12 @@ void draw()
 
 }
 
-void init_game(bool re = false)
+void init_game()
 {
-    if (!re){
-        camera = Camera2D();
-        camera.target = {0, 0};
-        camera.offset = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
-        camera.zoom = 10.0f;
-    }
+    camera = Camera2D();
+    camera.target = {0, 0};
+    camera.offset = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+    camera.zoom = 12.0f;
 
     viewport_size = Vector2{GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom};
     viewport_origin = Vector2{-viewport_size.x / 2.0f, -viewport_size.y / 2.0f};
@@ -99,14 +99,13 @@ void init_game(bool re = false)
     escape_was_down = false;
     inited_victory_state = false;
 
-    if (!re){
-        load_fonts();
-        load_textures();
-        load_sounds();
-    }
+    load_fonts();
+    load_textures();
+    load_sounds();
     load_level();
 
-    game_state = re ? dir_choice_state : menu_state;
+    game_state = menu_state;
+    //invincibility = powerup(invincibility_effect())
 
 }
 

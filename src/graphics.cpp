@@ -182,7 +182,9 @@ void draw_level()
 
 void draw_paddle()
 {
-        paddle.draw();
+        for (auto i : paddles) {
+            i.draw();
+        }
 }
 
 

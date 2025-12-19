@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "body.h"
+#include "powerup.h"
 
 #include <cmath>
 #include <cstddef>
@@ -13,20 +14,29 @@ constexpr char BLOCK = '@';
 constexpr char PADDLE = 'P';
 constexpr char CORE = '!';
 constexpr char BALL = '*';
+constexpr char BONUS_PADDLE_X2 = '%';
+constexpr char BONUS_INVINCIBILITY = '&';
+
+constexpr char type_box[5] = {WALL, BLOCK, CORE, BONUS_INVINCIBILITY, BONUS_PADDLE_X2};
 
 constexpr int BLOCK_SIZE = 16;
+
+inline auto BORDER_COLOR = GRAY;
 
 inline b2WorldDef world_def;
 inline b2WorldId world_id;
 inline RenderTexture2D render_texture;
 inline Vector2 viewport_size;
 inline Vector2 viewport_origin;
-
 inline Camera2D camera;
 
 inline std::vector<Body> bodies;
+inline std::vector<Body> paddles;
 
 inline bool level_passed;
+
+inline powerup invincibility;
+inline powerup paddle_x2;
 
 
 struct RectangleR {
@@ -35,6 +45,11 @@ struct RectangleR {
 
     RectangleR(Vector2 position, float rotation) : position_(position), rotation_(rotation){}
 };
+
+inline bool in(const auto& val, const auto& arr)
+{
+    return std::find(std::begin(arr), std::end(arr), val) != std::end(arr);
+}
 
 struct Vector2p {
     float dist;
@@ -118,7 +133,8 @@ enum collision_type : int {
     COLLISION_BALL,
     COLLISION_PADDLE,
     COLLISION_WALL,
-    COLLISION_BONUS,
+    COLLISION_BONUS_PADDLE_X2,
+    COLLISION_BONUS_INVINCIBILITY,
     COLLISION_CORE
 };
 
@@ -127,11 +143,11 @@ inline char level_1_data[] = {
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ','@','@','@',' ',' ',' ',
     ' ',' ','@','@','@','@','@',' ',' ',
-    '@',' ','@','@','!','@','@',' ','@',
-    ' ',' ','@','@',' ','@','@',' ',' ',
-    ' ',' ',' ','@',' ','@',' ',' ',' ',
+    '#',' ','@','@','!','@','@',' ','@',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    ' ',' ',' ','@','@','#',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    '@',' ',' ',' ',' ',' ',' ',' ','@'
+    '%',' ',' ',' ',' ',' ',' ',' ','&'
 };
 
 inline level level_1 = {

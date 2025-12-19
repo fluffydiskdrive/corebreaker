@@ -57,6 +57,36 @@ void spawn_ball()
     ball = bodies.back();
     //ball_pos = b2V2_to_V2(b2Body_GetPosition(ball._body_id));
     ball._graph_position = ball_pos;
+
+
+        invincibility = powerup(
+        [](bool active) {
+
+                if (active) {
+                    BORDER_COLOR = {68, 149, 255, 255};
+                    if (!is_ball_inside_level()) {
+                        const auto curr_vel = b2Body_GetLinearVelocity(ball._body_id);
+                       const auto normal_vel = b2Normalize(b2Body_GetPosition(ball._body_id));
+                       const auto reflected_vel = curr_vel - (2 * (curr_vel.x * normal_vel.x + curr_vel.y * normal_vel.y)) * normal_vel;
+                       b2Body_SetLinearVelocity(ball._body_id, reflected_vel);
+                    }
+                } else {BORDER_COLOR = GRAY;}
+            },
+             5.0f
+            );
+        paddle_x2 = powerup(
+            [](bool active) {
+                for (int i = 1; i < 4; ++i) {
+                    if (active){
+                        b2Body_Enable(paddles[i]._body_id);
+                        paddles[i]._to_draw = true;
+                    } else {
+                        b2Body_Disable(paddles[i]._body_id);
+                        paddles[i]._to_draw = false;
+                    }
+                }
+            }, 3.0f);
+
 }
 
 void move_ball()

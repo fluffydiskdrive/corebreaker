@@ -9,7 +9,9 @@ struct Body
 {
     b2BodyId _body_id;
 
-    bool to_delete;
+    bool _to_delete;
+    bool _to_draw;
+    //bool _is_enabled;
 
     Vector2 _graph_position;
     float _graph_rotation_d;

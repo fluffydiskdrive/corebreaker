@@ -8,13 +8,13 @@
 
 #include "ball.h"
 #include "paddle.h"
+#include "powerup.h"
 #include "raylib.h"
 
 #include <vector>
 
 
-
-Body init_box(Vector2 position, CustomBodyData* box_data)
+Body init_box(Vector2 position, CustomBodyData* box_data, Texture2D* tex)
 {
 
     b2BodyDef box_def = b2DefaultBodyDef();
@@ -30,13 +30,15 @@ Body init_box(Vector2 position, CustomBodyData* box_data)
 
     const auto box_id = b2CreateBody(world_id, &box_def);
     b2CreatePolygonShape(box_id, &box_shape_def, &box_polygon);
-    auto box = Body{box_id, box_data->_collision_type == COLLISION_BOX ? &block_texture : &core_texture};
+    auto box = Body{box_id, tex};
     box._graph_position = b2V2_to_V2(b2Body_GetPosition(box_id));
     return box;
 }
 
 void load_level(const int offset)
 {
+
+
     if (current_level) {
         unload_level();
     }
@@ -68,10 +70,40 @@ void load_level(const int offset)
     for (int row = 0; row < rows; ++row) {
         for (int column = 0; column < columns; ++column) {
             current_level_data[row * columns + column] = levels[current_level_index].data[row * columns + column];
-            if (current_level_data[row * columns + column] == BLOCK || current_level_data[row * columns + column] == CORE) {
 
-                auto* box_data = new CustomBodyData { current_level_data[row * columns + column] == BLOCK ? COLLISION_BOX : COLLISION_CORE};
-                auto box = init_box({((static_cast<float>(columns) / 2) - column) * 2 - 1.0f, ((static_cast<float>(rows) / -2) + row) * 2 + 1.0f}, box_data);
+            if (in(current_level_data[row * columns + column], type_box)) {
+                CustomBodyData* box_data;
+                Texture2D* tex;
+
+                switch (current_level_data[row * columns + column]){
+                case BLOCK: {
+                    box_data = new CustomBodyData {COLLISION_BOX};
+                    tex = &block_texture;
+                    break;
+                }
+                case CORE: {
+                    box_data = new CustomBodyData {COLLISION_CORE};
+                    tex = &core_texture;
+                    break;
+                }
+                case BONUS_INVINCIBILITY: {
+                    box_data = new CustomBodyData {COLLISION_BONUS_INVINCIBILITY};
+                    tex = &invincibility_bonus_texture;
+                    break;
+                }
+                case BONUS_PADDLE_X2: {
+                    box_data = new CustomBodyData {COLLISION_BONUS_PADDLE_X2};
+                    tex = &paddle_x2_bonus_texture;
+                    break;
+                }
+                case WALL: {
+                    box_data = new CustomBodyData {COLLISION_WALL};
+                    tex = &wall_texture;
+                    break;
+                }
+                }
+
+                auto box = init_box({((static_cast<float>(columns) / 2) - column) * 2 - 1.0f, ((static_cast<float>(rows) / -2) + row) * 2 + 1.0f}, box_data, tex);
                 boxes.push_back(box);
                 //bodies.push_back(box);
                 ++current_level_blocks;
@@ -92,6 +124,7 @@ void unload_level()
     delete[] current_level->data;
     delete current_level;
     bodies.clear();
+    paddles.clear();
     paddle_pos = {0, 0};
     ball_pos = {0, 0};
     boxes.clear();
@@ -125,7 +158,7 @@ void level_draw()
 void destroy_boxes()
 {
     for (auto i = boxes.begin(); i != boxes.end(); ) {
-        if (i->to_delete) {
+        if (i->_to_delete) {
             b2DestroyBody(i->_body_id);
             --current_level_blocks;
             i = boxes.erase(i);
@@ -133,31 +166,43 @@ void destroy_boxes()
     }
 }
 
+void for_box(const b2ContactEndTouchEvent* end_touch_event)
+{
+    auto curr_body = b2Shape_GetBody(end_touch_event->shapeIdA);
+    for (auto &j : boxes) {
+        if (j._body_id.index1 == curr_body.index1 && j._body_id.generation == curr_body.generation && j._body_id.world0 == curr_body.world0) {
+            j._to_delete = true;
+        }
+    }
+    BALL_SPEED += 0.45f;
+    PADDLE_SPEED += 0.055f;
+}
+
 void contact_ball()
 {
+
     b2ContactEvents ball_contact_events = b2World_GetContactEvents(world_id);
     for (int i = 0; i < ball_contact_events.endCount; ++i) {
         b2ContactEndTouchEvent* end_touch_event = ball_contact_events.endEvents + i;
-        if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type == COLLISION_BOX){
-            auto curr_body = b2Shape_GetBody(end_touch_event->shapeIdA);
-            for (auto &j : boxes) {
-                if (j._body_id.index1 == curr_body.index1 && j._body_id.generation == curr_body.generation && j._body_id.world0 == curr_body.world0) {
-                    j.to_delete = true;
-                }
-            }
-            BALL_SPEED += 0.25f;
-            PADDLE_SPEED += 0.055f;
-        } else if (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type == COLLISION_CORE) {
-            level_passed = true;
-            // game_state = victory_state;
-            // ClearBackground(BLACK);
-            // init_victory_menu();
-            // camera.offset = {0, 0};
-            // camera.zoom = 1.0f;
-            // draw_victory_menu();
-        }
-    }
 
+
+
+        switch (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type) {
+        case COLLISION_BONUS_PADDLE_X2: paddle_x2._active = true; for_box(end_touch_event); break;
+        case COLLISION_BOX: {
+            for_box(end_touch_event);
+            //paddle_x2.active = true;
+            break;
+        }
+        case COLLISION_CORE: {
+            level_passed = true;
+            break;
+        }
+        case COLLISION_WALL: break;
+        case COLLISION_BONUS_INVINCIBILITY: invincibility._active = true; for_box(end_touch_event); break;
+        }
+
+    }
 }
 
 // bool is_colliding_with_level_cell(const Vector2 pos, const Vector2 size, const char cell)

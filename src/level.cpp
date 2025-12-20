@@ -1,5 +1,4 @@
 #include "level.h"
-
 #include "assets.h"
 // #include "ball.h"
 #include "game.h"
@@ -12,6 +11,33 @@
 #include "raylib.h"
 
 #include <vector>
+
+struct timer {
+    float duration;
+    float time;
+    bool paused;
+
+    bool time_out;
+
+    timer(){paused = true;}
+    timer(const float dur) : duration(dur){paused = true; time = 0; time_out = false;}
+
+    void update_timer(const float delta)
+    {
+        if (!paused && !time_out) time += delta;
+        if (time >= duration) time_out = true;
+    }
+
+    void restart_timer()
+    {
+        time = 0;
+        time_out = false;
+        paused = false;
+    }
+};
+
+timer boss_attack_recharge_timer;
+timer boss_attack_timer;
 
 
 Body init_box(Vector2 position, CustomBodyData* box_data, Texture2D* tex)
@@ -37,11 +63,10 @@ Body init_box(Vector2 position, CustomBodyData* box_data, Texture2D* tex)
 
 void load_level(const int offset)
 {
-
-
     if (current_level) {
         unload_level();
     }
+
     world_def = b2DefaultWorldDef();
     world_def.gravity = {0, 0};
     world_id = b2CreateWorld(&world_def);
@@ -50,20 +75,21 @@ void load_level(const int offset)
     if (current_level_index >= level_count) {
         game_state = victory_state;
         ClearBackground(BLACK);
-        init_victory_menu();
+        init_state_menu();
         current_level_index = 0;
 
         return;
     }
 
-
-
+    if (levels[current_level_index].boss_level) {
+        boss_attack_recharge_timer = timer{7.0f};
+        boss_attack_timer = timer{3.0f};
+    }
 
     const size_t rows = levels[current_level_index].rows;
     const size_t columns = levels[current_level_index].columns;
 
     paddle_pos.dist = static_cast<float>(3.0f * sqrt((rows / 2) * (rows / 2) + (columns / 2) * (columns / 2)));
-
 
     current_level_blocks = 0;
     char* current_level_data = new char[rows * columns];
@@ -203,6 +229,24 @@ void contact_ball()
         }
 
     }
+}
+
+void boss_attack(float delta)
+{
+    for (int i = 0; i < 4; ++i) {
+
+    }
+}
+
+void update_level(float delta)
+{
+    contact_ball();
+    destroy_boxes();
+    if (current_level->boss_level) {
+        boss_attack_recharge_timer.update_timer(delta);
+        if (boss_attack_recharge_timer.time_out) boss_attack(delta);
+    }
+
 }
 
 // bool is_colliding_with_level_cell(const Vector2 pos, const Vector2 size, const char cell)

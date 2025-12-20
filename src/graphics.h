@@ -9,7 +9,7 @@ void draw_level();
 void draw_paddle();
 void draw_ball();
 void draw_pause_menu();
-void init_victory_menu();
-void draw_victory_menu();
+void init_state_menu();
+void draw_state_menu();
 
 #endif // GRAPHICS_H

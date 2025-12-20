@@ -77,10 +77,10 @@ void draw_sprite(sprite& sprite, const float x, const float y, const float size)
 
 void draw_text(const Text& text)
 {
-    const auto [x, y] = MeasureTextEx(*text.font, text.str.c_str(), text.size * screen_scale, text.spacing);
+    const auto [x, y] = MeasureTextEx(*text.font, text.str.c_str(), text.size, text.spacing);
     const Vector2 pos = {
-        screen_size.x * text.position.x - 0.5f * x,
-        screen_size.y * text.position.y - 0.5f * y
+        text.position.x - 0.5f * x,
+        text.position.y - 0.5f * y
     };
     DrawTextEx(*text.font, text.str.c_str(), pos, y, text.spacing, text.color);
 }
@@ -128,9 +128,20 @@ void draw_menu()
 
 void draw_ui()
 {
+    DrawTextureEx(heart_texture, {viewport_size.x / 2 - 16.0f, -(heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f}, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
+    const Text lives_counter = {
+        std::to_string(lives),
+        {(viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), 0},
+        4.0f,
+        BLACK,
+        0.1f,
+        &menu_font
+    };
+    draw_text(lives_counter);
+
     const Text level_counter = {
         "LEVEL " + std::to_string(current_level_index + 1) + " OUT OF " + std::to_string(level_count),
-        { 0.0f, -.045f },
+        { 0.0f, -viewport_size.y / 2 + 5.0f},
         4.0f,
         WHITE,
         0.4f,
@@ -140,7 +151,7 @@ void draw_ui()
 
     const Text boxes_remaining = {
         "BLOCKS " + std::to_string(current_level_blocks),
-        { 0.0f, 0.045f },
+        { 0.0f, viewport_size.y / 2 - 5.0f},
         4.0f,
         WHITE,
         0.4f,
@@ -215,37 +226,41 @@ void draw_pause_menu()
     draw_text(paused_title);
 }
 
-void init_victory_menu()
+void init_state_menu()
 {
-    for (size_t i = 0; i < victory_balls_count; ++i) {
-        victory_balls_pos[i] = {viewport_origin.x + victory_balls_size, viewport_origin.y + victory_balls_size};
-        victory_balls_vel[i] = {
-            std::cosf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
-            std::sinf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
-        };
+    if (game_state == victory_state || game_state == defeat_state){
+        for (size_t i = 0; i < victory_balls_count; ++i) {
+            victory_balls_pos[i] = {viewport_origin.x + victory_balls_size, viewport_origin.y + victory_balls_size};
+            victory_balls_vel[i] = {
+                std::cosf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
+                std::sinf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
+            };
+        }
     }
     //inited_victory_state = true;
 }
 
-void animate_victory_menu()
+void animate_state_menu()
 {
-    for (size_t i = 0; i < victory_balls_count; ++i) {
-        if (victory_balls_pos[i].x + victory_balls_vel[i].x > (viewport_origin.x + viewport_size.x) || victory_balls_pos[i].x + victory_balls_vel[i].x < viewport_origin.x) {
-            victory_balls_vel[i].x *= -1.0f;
+    if (game_state == victory_state || game_state == defeat_state) {
+        for (size_t i = 0; i < victory_balls_count; ++i) {
+            if (victory_balls_pos[i].x + victory_balls_vel[i].x > (viewport_origin.x + viewport_size.x) || victory_balls_pos[i].x + victory_balls_vel[i].x < viewport_origin.x) {
+                victory_balls_vel[i].x *= -1.0f;
+            }
+            if (victory_balls_pos[i].y + victory_balls_vel[i].y > (viewport_origin.y + viewport_size.y)|| victory_balls_pos[i].y + victory_balls_vel[i].y < viewport_origin.y) {
+                victory_balls_vel[i].y *= -1.0f;
+            }
+            victory_balls_pos[i] = {
+                victory_balls_pos[i].x + victory_balls_vel[i].x,
+                victory_balls_pos[i].y + victory_balls_vel[i].y
+            };
         }
-        if (victory_balls_pos[i].y + victory_balls_vel[i].y > (viewport_origin.y + viewport_size.y)|| victory_balls_pos[i].y + victory_balls_vel[i].y < viewport_origin.y) {
-            victory_balls_vel[i].y *= -1.0f;
-        }
-        victory_balls_pos[i] = {
-            victory_balls_pos[i].x + victory_balls_vel[i].x,
-            victory_balls_pos[i].y + victory_balls_vel[i].y
-        };
     }
 }
 
-void draw_victory_menu()
+void draw_state_menu()
 {
-    animate_victory_menu();
+    animate_state_menu();
 
     DrawRectangleV(viewport_origin, viewport_size, { 0, 0, 0, 50 });
 
@@ -253,23 +268,34 @@ void draw_victory_menu()
         DrawCircleV({ x, y }, victory_balls_size, WHITE);
     }
 
-    const Text victory_title = {
-        "Victory!",
-        { 0.0f, 0.0f },
-        10.0f,
-        RED,
-        .06f,
-        &menu_font
-    };
-    draw_text(victory_title);
-
-    const Text victory_subtitle = {
-        "Press Enter to Restart",
-        { 0.0f, 0.01f },
-        2.0f,
-        WHITE,
-        .02f,
-        &menu_font
-    };
-    draw_text(victory_subtitle);
+    if (game_state == victory_state){
+        const Text victory_title = {
+            "Victory!",
+            { 0.0f, 0.0f },
+            10.0f,
+            RED,
+            .06f,
+            &menu_font
+        };
+        draw_text(victory_title);
+    } else if (game_state == defeat_state) {
+        const Text defeat_title = {
+            "You lose!",
+            { 0.0f, 0.0f },
+            10.0f,
+            RED,
+            .06f,
+            &menu_font
+        };
+        draw_text(defeat_title);
+    }
+    const Text subtitle = {
+            "Press Enter to Restart",
+            { 0.0f, 0.01f },
+            2.0f,
+            WHITE,
+            .02f,
+            &menu_font
+        };
+    draw_text(subtitle);
 }

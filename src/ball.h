@@ -17,7 +17,6 @@ inline b2Vec2 ball_init_vel = {0, 0};
 
 void spawn_ball();
 void move_ball();
-void contact_ball();
 void choose_dir();
 bool is_ball_inside_level();
 

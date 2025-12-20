@@ -12,7 +12,7 @@
 //-----------------------------------------A
 
 bool escape_was_down;
-bool inited_victory_state;
+bool inited_state;
 
 void update(float delta)
 {
@@ -42,8 +42,7 @@ void update(float delta)
     //     default:;
     // }
     move_ball();
-    contact_ball();
-    destroy_boxes();
+    update_level(delta);
 
     invincibility.update_powerup(delta);
     paddle_x2.update_powerup(delta);
@@ -51,9 +50,13 @@ void update(float delta)
 
 
     if (!is_ball_inside_level() && !invincibility._active) {
-        game_state = dir_choice_state;
-        load_level();
-        PlaySound(lose_sound);
+
+        if (lives > 0){
+            game_state = dir_choice_state;
+            load_level();
+            PlaySound(lose_sound);
+            --lives;
+        } else game_state = defeat_state;
     } else if (level_passed) {
         game_state = dir_choice_state;
         load_level(1);
@@ -76,8 +79,9 @@ void draw()
         draw_ui();
         break;
         case paused_state: draw_pause_menu(); break;
-        case menu_state: draw_menu(); break;
-        case victory_state: draw_victory_menu(); break;
+        case menu_state: lives = 3; draw_menu(); break;
+        case victory_state: draw_state_menu(); break;
+        case defeat_state: draw_state_menu(); break;
     }
     }
 
@@ -97,7 +101,7 @@ void init_game()
 
     level_passed = false;
     escape_was_down = false;
-    inited_victory_state = false;
+    inited_state = false;
 
     load_fonts();
     load_textures();
@@ -128,9 +132,10 @@ void handle_states(float delta)
         }
         break;
     }
+    case defeat_state:
     case victory_state: {
-        if (!inited_victory_state) {init_victory_menu(); inited_victory_state = true;}
-        if (IsKeyDown(KEY_ENTER)) {load_level(-(level_count - 1)); current_level_index = 0; game_state = dir_choice_state;}
+        if (!inited_state) {init_state_menu(); inited_state = true;}
+        if (IsKeyDown(KEY_ENTER)) {lives = 3; load_level(game_state == victory_state ? -(level_count - 1) : 0); game_state = dir_choice_state;}
         break;
     }
     }

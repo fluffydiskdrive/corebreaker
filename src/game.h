@@ -118,6 +118,7 @@ constexpr float GRAPH_SCALING = 0.1f;
 struct level {
     size_t rows = 0, columns = 0;
     char* data = nullptr;
+    bool boss_level = false;
 };
 
 enum game_state {
@@ -125,7 +126,8 @@ enum game_state {
     in_game_state,
     dir_choice_state,
     paused_state,
-    victory_state
+    victory_state,
+    defeat_state
 };
 
 enum collision_type : int {
@@ -171,9 +173,58 @@ inline level level_2 = {
     level_2_data
 };
 
-inline constexpr size_t level_count = 1;
+inline char level_3_data[] = {
+    '@',' ',' ',' ','@',' ',' ',' ','@',
+    '@',' ',' ',' ',' ',' ',' ',' ',' ',
+    '@',' ',' ','@','@','@',' ',' ',' ',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    '@',' ','@','@','!','@','@',' ','@',
+    ' ',' ','@','@','@','@','@',' ',' ',
+    ' ',' ',' ','@','@','@',' ',' ','@',
+    ' ',' ',' ',' ',' ',' ',' ',' ','@',
+    '@',' ',' ',' ','@',' ',' ',' ','@'
+};
+inline level level_3 = {
+    9, 9,
+    level_3_data
+};
+
+inline char level_4_data[] = {
+    '@',' ',' ',' ','@',' ',' ',' ','@',
+    '@',' ',' ',' ',' ',' ',' ',' ',' ',
+    '@',' ',' ','@','@','@',' ',' ',' ',
+    '@',' ','@','@','@','@','@',' ',' ',
+    '@',' ','@','@','!','@','@',' ','@',
+    ' ',' ','@','@','@','@','@',' ','@',
+    ' ',' ',' ','@','@','@',' ',' ','@',
+    ' ',' ',' ',' ',' ',' ',' ',' ','@',
+    '@',' ',' ',' ','@',' ',' ',' ','@'
+};
+inline level level_4 = {
+    9, 9,
+    level_4_data
+};
+
+inline char level_5_data[] = {
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ','!',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+};
+inline level level_5 = {
+    9, 9,
+    level_5_data,
+    true
+};
+
+inline constexpr size_t level_count = 5;
 inline level levels[level_count] = {
-    level_1//, level_2
+    level_1, level_2, level_3, level_4, level_5
 };
 
 inline game_state game_state = menu_state;

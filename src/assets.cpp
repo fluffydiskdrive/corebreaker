@@ -26,6 +26,7 @@ void load_textures()
     arrow_texture = LoadTexture(ASSETS_PATH"images/arrow.png");
     paddle_x2_bonus_texture = LoadTexture(ASSETS_PATH"images/paddle_x2_bonus.png");
     invincibility_bonus_texture = LoadTexture(ASSETS_PATH"images/invincibility_bonus.png");
+    heart_texture = LoadTexture(ASSETS_PATH"images/heart.png");
 }
 
 void unload_textures()

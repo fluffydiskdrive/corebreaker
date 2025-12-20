@@ -11,6 +11,8 @@ inline Vector2 pp_cart;
 
 inline Body paddle;
 
+inline int lives;
+
 inline Vector2p paddle_pos = {0, 0};
 
 void spawn_paddle();

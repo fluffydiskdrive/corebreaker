@@ -19,6 +19,7 @@ inline Texture2D core_texture;
 inline Texture2D arrow_texture;
 inline Texture2D paddle_x2_bonus_texture;
 inline Texture2D invincibility_bonus_texture;
+inline Texture2D heart_texture;
 
 inline sprite ball_sprite;
 

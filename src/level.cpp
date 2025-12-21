@@ -20,6 +20,8 @@ float base_angle_start;
 float base_angle_end;
 float base_angle;
 
+std::vector<char> curr_level_data;
+
 
 Body init_box(Vector2 position, CustomBodyData* box_data, Texture2D* tex)
 {
@@ -42,25 +44,35 @@ Body init_box(Vector2 position, CustomBodyData* box_data, Texture2D* tex)
     return box;
 }
 
-void load_level(const int offset)
+void load_level(const int offset, bool new_init)
 {
-    if (current_level) {
-        unload_level();
-    }
-
-    world_def = b2DefaultWorldDef();
-    world_def.gravity = {0, 0};
-    world_id = b2CreateWorld(&world_def);
-
     current_level_index += offset;
     if (current_level_index >= level_count) {
         game_state = victory_state;
         ClearBackground(BLACK);
         init_state_menu();
         current_level_index = 0;
-
+        //unload_level();
         return;
     }
+    if (new_init || offset) {
+        lives = MAX_LIVES;
+        if (curr_level_data.size()) curr_level_data.clear();
+        //for (int i = 0; i < levels[current_level_index].rows * levels[current_level_index].columns; ++i) curr_level_data->push_back(levels[current_level_index].data->[i]);
+        curr_level_data = *levels[current_level_index].data;
+    }
+    if (current_level) {
+        if (!current_level->boss_level) core_hp = 10; else core_hp = 1;
+        unload_level();
+    }
+
+    core_max_hp = 1;
+    BALL_SPEED = 15.0f;
+    PADDLE_SPEED = 1.0f;
+    world_def = b2DefaultWorldDef();
+    world_def.gravity = {0, 0};
+    world_id = b2CreateWorld(&world_def);
+
 
     if (levels[current_level_index].boss_level) {
         boss_attack_recharge_timer = timer{5.0f};
@@ -70,30 +82,34 @@ void load_level(const int offset)
         paddle_invincible_timer = timer{3.0f};
         //paddle_invincible_timer.paused = false;
         //boss_attack_recharge_timer.restart_timer();
-        base_angle_start = randint(0, 90);
+        base_angle_start = randint(0, 180);
         base_angle_end = base_angle_start + randint(10, 40);
         base_angle = base_angle_start;
+        core_max_hp = 10;
+
     }
 
     const size_t rows = levels[current_level_index].rows;
     const size_t columns = levels[current_level_index].columns;
 
     paddle_pos.dist = static_cast<float>(3.0f * sqrt((rows / 2) * (rows / 2) + (columns / 2) * (columns / 2)));
+    blocks_remaining = 0;
+
 
     current_level_blocks = 0;
-    char* current_level_data = new char[rows * columns];
     for (int row = 0; row < rows; ++row) {
         for (int column = 0; column < columns; ++column) {
-            current_level_data[row * columns + column] = levels[current_level_index].data[row * columns + column];
 
-            if (in(current_level_data[row * columns + column], type_box)) {
+
+            if (in((curr_level_data)[row * columns + column], type_box)) {
                 CustomBodyData* box_data;
                 Texture2D* tex;
 
-                switch (current_level_data[row * columns + column]){
+                switch ((curr_level_data)[row * columns + column]){
                 case BLOCK: {
                     box_data = new CustomBodyData {COLLISION_BOX};
                     tex = &block_texture;
+                    ++blocks_remaining;
                     break;
                 }
                 case CORE: {
@@ -119,13 +135,14 @@ void load_level(const int offset)
                 }
 
                 auto box = init_box({((static_cast<float>(columns) / 2) - column) * 2 - 1.0f, ((static_cast<float>(rows) / -2) + row) * 2 + 1.0f}, box_data, tex);
+                box.map_index = row * columns + column;
                 boxes.push_back(box);
                 //bodies.push_back(box);
                 ++current_level_blocks;
             }
         }
     }
-    current_level = new level { rows, columns, current_level_data, levels[current_level_index].boss_level};
+    current_level = new level { rows, columns, &curr_level_data, levels[current_level_index].boss_level};
 
     spawn_paddle();
     spawn_ball();
@@ -136,7 +153,7 @@ void load_level(const int offset)
 void unload_level()
 {
     b2DestroyWorld(world_id);
-    delete[] current_level->data;
+    //delete current_level->data;
     delete current_level;
     bodies.clear();
     paddles.clear();
@@ -155,7 +172,7 @@ bool is_inside_level(const int row, const int column)
 
 char& get_level_cell(const size_t row, const size_t column)
 {
-    return current_level->data[row * current_level->columns + column];
+    return (*current_level->data)[row * current_level->columns + column];
 }
 
 void set_level_cell(const size_t row, const size_t column, const char cell)
@@ -174,11 +191,13 @@ void destroy_boxes()
 {
     for (auto i = boxes.begin(); i != boxes.end(); ) {
         if (i->_to_delete) {
+            (curr_level_data)[i->map_index] = ' ';
             b2DestroyBody(i->_body_id);
             --current_level_blocks;
             i = boxes.erase(i);
         } else ++i;
     }
+    if (blocks_remaining <= 0) level_passed = true;
 }
 
 void for_box(const b2ContactEndTouchEvent* end_touch_event)
@@ -191,6 +210,7 @@ void for_box(const b2ContactEndTouchEvent* end_touch_event)
     }
     BALL_SPEED += 0.45f;
     PADDLE_SPEED += 0.055f;
+    --blocks_remaining;
 }
 
 void contact_ball()
@@ -210,7 +230,11 @@ void contact_ball()
             break;
         }
         case COLLISION_CORE: {
-            level_passed = true;
+            --core_hp;
+            if (core_hp <= 0) {
+                level_passed = true;
+                //load_level(1);
+            }
             break;
         }
         case COLLISION_WALL: break;
@@ -225,27 +249,28 @@ void boss_attack(float delta)
 
 
     if (base_angle == base_angle_start) boss_attack_timer.restart_timer();
+    //base_angle = base_angle_start + (boss_attack_timer.time + 0.01) / boss_attack_timer.duration * (base_angle_end - base_angle_start);
     base_angle += (base_angle_end / boss_attack_timer.duration * delta);
 
-    if (boss_attack_timer.time_out) {
-        boss_attack_recharge_timer.restart_timer();
-        base_angle_start = randint(0, 90);
-        base_angle_end = base_angle_start + randint(10, 40);
-        base_angle = base_angle_start;
-    }
-    base_angle = norm_ang(base_angle);
+
 
 
     attack_draw();
     if (((norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 8.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle - 8.0f))
-        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 98.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 82.0f))
-        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 188.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 172.0f))
-        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 278.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 262.0f)))
+        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 188.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 172.0f)))
         && paddle_invincible_timer.time_out)
         {
         --lives;
         paddle_invincible_timer.restart_timer();
     }
+
+    if (boss_attack_timer.time_out) {
+        boss_attack_recharge_timer.restart_timer();
+        base_angle_start = randint(0, 180);
+        base_angle_end = base_angle_start + randint(10, 40);
+        base_angle = base_angle_start;
+    }
+    base_angle = norm_ang(base_angle);
 }
 
 constexpr float paddle_flash_interval = 0.1f;
@@ -285,31 +310,31 @@ void update_level(float delta)
 void attack_draw()
 {
     const float distance = paddle_pos.dist;
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 2; ++i) {
             for (int j = 0; distance - j * 1.6 > 3.2; ++j) {
-                Vector2 target_pos = Vector2p( j * 16 * GRAPH_SCALING, base_angle + 90.0f * i).to_cartesian();
-                target_pos = {target_pos.x + std::cosf((90.0f * (i+1) + base_angle) * DEG2RAD) * laser_body_texture.width / 2.0f * GRAPH_SCALING, target_pos.y + std::sinf((90.0f * (i+1) + base_angle) * DEG2RAD) * laser_body_texture.width / 2.0f * GRAPH_SCALING};
+                Vector2 target_pos = Vector2p( j * 16 * GRAPH_SCALING, base_angle + 180.0f * i).to_cartesian();
+                target_pos = {target_pos.x + std::cosf((180.0f * i + 90.0f + base_angle) * DEG2RAD) * laser_body_texture.width / 2.0f * GRAPH_SCALING, target_pos.y + std::sinf((180.0f * i + 90.0f + base_angle) * DEG2RAD) * laser_body_texture.width / 2.0f * GRAPH_SCALING};
                 DrawTexturePro(
                     laser_body_texture,
                     Rectangle(0, 0, laser_body_texture.width, laser_body_texture.height),
                     Rectangle(target_pos.x, target_pos.y, laser_body_texture.width * GRAPH_SCALING, laser_body_texture.height * GRAPH_SCALING),
                     {0, 0},
-                    base_angle + 90.0f * (i - 1),
+                    base_angle + 90.0f + 180.0f * (i + 1),
                     WHITE);
             }
-        // auto target_pos = Vector2p{distance - 3.2f, base_angle + 90.0f * i};
+        // auto target_pos = Vector2p{distance - 3.2f, base_angle + 180.0f * i};
         // target_pos = target_pos + Vector2p{0, atan2f(laser_end_texture.width / 2.0f, target_pos.dist)};
-        Vector2 target_pos = Vector2p( distance - 3.2f, base_angle + 90.0f * i).to_cartesian();
-        target_pos = {target_pos.x + std::cosf((90.0f * (i + 1) + base_angle) * DEG2RAD) * laser_end_texture.width / 2.0f * GRAPH_SCALING, target_pos.y + std::sinf((90.0f * (i + 1) + base_angle) * DEG2RAD) * laser_end_texture.width / 2.0f * GRAPH_SCALING};
+        Vector2 target_pos = Vector2p( distance - 3.2f, base_angle + 180.0f * i).to_cartesian();
+        target_pos = {target_pos.x + std::cosf((180.0f * i + 90 + base_angle) * DEG2RAD) * laser_end_texture.width / 2.0f * GRAPH_SCALING, target_pos.y + std::sinf((180.0f * i + 90.0f + base_angle) * DEG2RAD) * laser_end_texture.width / 2.0f * GRAPH_SCALING};
         DrawTexturePro(
                 laser_end_texture,
                 Rectangle(0, 0, laser_end_texture.width, laser_end_texture.height),
                 Rectangle(target_pos.x, target_pos.y, laser_end_texture.width * GRAPH_SCALING, laser_end_texture.height * GRAPH_SCALING),
                 {0, 0},
-                base_angle + 90.0f * (i - 1),
+                base_angle + 90.0f + 180.0f * (i + 1),
                 WHITE);
 
-        //DrawLineEx({0, 0}, Vector2p{paddle_pos.dist, base_angle + 90 * i}.to_cartesian(), 1.0f, GREEN);
+        //DrawLineEx({0, 0}, Vector2p{paddle_pos.dist, base_angle + 180 * i}.to_cartesian(), 1.0f, GREEN);
     }
 }
 

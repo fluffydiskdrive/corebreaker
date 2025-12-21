@@ -47,8 +47,8 @@ void update(float delta)
     update_level(delta);
 
     invincibility.update_powerup(delta);
-    invincibility._active = true;
-    invincibility._effect(true);
+    // invincibility._active = true;
+    // invincibility._effect(true);
     paddle_x4.update_powerup(delta);
 
 
@@ -81,7 +81,7 @@ void draw()
         draw_ui();
         break;
         case paused_state: draw_pause_menu(); break;
-        case menu_state: lives = 3; draw_menu(); break;
+        case menu_state: lives = MAX_LIVES; draw_menu(); break;
         case victory_state: draw_state_menu(); break;
         case defeat_state: draw_state_menu(); break;
     }
@@ -108,9 +108,10 @@ void init_game()
     load_fonts();
     load_textures();
     load_sounds();
-    load_level();
+    load_level(0, true);
 
     game_state = menu_state;
+    core_hp = 1;
     //invincibility = powerup(invincibility_effect())
 
 }
@@ -137,7 +138,7 @@ void handle_states(float delta)
     case defeat_state:
     case victory_state: {
         if (!inited_state) {init_state_menu(); inited_state = true;}
-        if (IsKeyDown(KEY_ENTER)) {lives = 3; load_level(game_state == victory_state ? -(level_count - 1) : 0); game_state = dir_choice_state;}
+        if (IsKeyDown(KEY_ENTER)) {lives = MAX_LIVES; current_level_index = 0; load_level(0, true); game_state = dir_choice_state;}
         break;
     }
     }

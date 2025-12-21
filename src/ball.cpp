@@ -72,7 +72,7 @@ void spawn_ball()
                     }
                 } else {BORDER_COLOR = GRAY;}
             },
-             5.0f
+             7.0f
             );
         paddle_x4 = powerup(
             [](bool active) {
@@ -85,7 +85,7 @@ void spawn_ball()
                         paddles[i]._to_draw = false;
                     }
                 }
-            }, 3.0f);
+            }, 7.0f);
 
 }
 

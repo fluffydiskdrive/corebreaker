@@ -150,7 +150,7 @@ void draw_ui()
     draw_text(level_counter);
 
     const Text boxes_remaining = {
-        "BLOCKS " + std::to_string(current_level_blocks),
+        "BLOCKS " + std::to_string(blocks_remaining),
         { 0.0f, viewport_size.y / 2 - 5.0f},
         4.0f,
         WHITE,

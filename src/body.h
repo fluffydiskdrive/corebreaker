@@ -11,6 +11,7 @@ struct Body
 
     bool _to_delete;
     bool _to_draw;
+    size_t map_index;
     //bool _is_enabled;
 
     Vector2 _graph_position;

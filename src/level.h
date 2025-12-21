@@ -15,7 +15,10 @@ inline size_t current_level_blocks;
 inline size_t current_level_index = 0;
 inline std::vector<Body> boxes;
 
-void load_level(int offset = 0);
+inline int core_max_hp = 1;
+inline int core_hp;
+
+void load_level(int offset = 0, bool new_init = false);
 void unload_level();
 
 bool is_inside_level(int row, int column);

@@ -40,6 +40,10 @@ inline bool boss_attacking;
 inline powerup invincibility;
 inline powerup paddle_x4;
 
+inline int blocks_remaining;
+
+constexpr int MAX_LIVES = 5;
+
 
 struct timer {
     float duration;
@@ -157,7 +161,7 @@ constexpr float GRAPH_SCALING = 0.1f;
 
 struct level {
     size_t rows = 0, columns = 0;
-    char* data = nullptr;
+    std::vector<char>* data = nullptr;
     bool boss_level = false;
 };
 
@@ -180,7 +184,7 @@ enum collision_type : int {
     COLLISION_CORE
 };
 
-inline char level_1_data[] = {
+inline std::vector level_1_data = {
     '@',' ',' ',' ','@',' ',' ',' ','@',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ','@','@','@',' ',' ',' ',
@@ -194,10 +198,10 @@ inline char level_1_data[] = {
 
 inline level level_1 = {
     9, 9,
-    level_1_data
+    &level_1_data
 };
 
-inline char level_2_data[] = {
+inline std::vector level_2_data = {
     '@',' ',' ',' ','@',' ',' ',' ','@',
     '@',' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ','@','@','@',' ',' ',' ',
@@ -210,10 +214,10 @@ inline char level_2_data[] = {
 };
 inline level level_2 = {
     9, 9,
-    level_2_data
+    &level_2_data
 };
 
-inline char level_3_data[] = {
+inline std::vector level_3_data = {
     '@',' ',' ',' ','@',' ',' ',' ','@',
     '@',' ',' ',' ',' ',' ',' ',' ',' ',
     '@',' ',' ','@','@','@',' ',' ',' ',
@@ -226,10 +230,10 @@ inline char level_3_data[] = {
 };
 inline level level_3 = {
     9, 9,
-    level_3_data
+    &level_3_data
 };
 
-inline char level_4_data[] = {
+inline std::vector level_4_data = {
     '@',' ',' ',' ','@',' ',' ',' ','@',
     '@',' ',' ',' ',' ',' ',' ',' ',' ',
     '@',' ',' ','@','@','@',' ',' ',' ',
@@ -242,29 +246,30 @@ inline char level_4_data[] = {
 };
 inline level level_4 = {
     9, 9,
-    level_4_data
+    &level_4_data
 };
 
-inline char level_5_data[] = {
+inline std::vector level_5_data = {
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ','!',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',' ','&',' ','@',' ','4',' ',' ',
+    ' ',' ',' ','@',' ','#',' ',' ',' ',
+    ' ',' ','@',' ','!',' ','@',' ',' ',
+    ' ',' ',' ','#',' ','@',' ',' ',' ',
+    ' ',' ','4',' ','@',' ','&',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
 };
 inline level level_5 = {
     9, 9,
-    level_5_data,
+    &level_5_data,
     true
 };
 
-inline constexpr size_t level_count = 1;
+inline constexpr size_t level_count = 2;
 inline level levels[level_count] = {
-    // level_1, level_2, level_3, level_4,
+    level_1,
+    // level_2, level_3, level_4,
     level_5
 };
 

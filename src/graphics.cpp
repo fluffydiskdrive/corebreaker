@@ -211,6 +211,11 @@ void draw_ball()
     ball.draw();
 }
 
+void draw_boss_attack()
+{
+    attack_draw();
+}
+
 void draw_pause_menu()
 {
     ClearBackground(BLACK);

@@ -18,6 +18,8 @@ void update(float delta)
 {
     b2World_Step(world_id, delta, 4);
 
+
+
     bool escape_is_down = IsKeyDown(KEY_ESCAPE);
     if (!escape_was_down && escape_is_down && game_state == in_game_state) {
         game_state = paused_state;
@@ -26,10 +28,10 @@ void update(float delta)
     escape_was_down = escape_is_down;
 
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-        move_paddle(PADDLE_SPEED);
+        update_paddle(PADDLE_SPEED);
     }
     if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-        move_paddle(-PADDLE_SPEED);
+        update_paddle(-PADDLE_SPEED);
     }
 
     if (IsKeyDown(KEY_BACKSLASH)) {
@@ -45,18 +47,17 @@ void update(float delta)
     update_level(delta);
 
     invincibility.update_powerup(delta);
-    paddle_x2.update_powerup(delta);
+    invincibility._active = true;
+    invincibility._effect(true);
+    paddle_x4.update_powerup(delta);
 
 
 
     if (!is_ball_inside_level() && !invincibility._active) {
-
-        if (lives > 0){
             game_state = dir_choice_state;
             load_level();
             PlaySound(lose_sound);
             --lives;
-        } else game_state = defeat_state;
     } else if (level_passed) {
         game_state = dir_choice_state;
         load_level(1);
@@ -64,6 +65,7 @@ void update(float delta)
         level_passed = false;
 
     }
+    if (lives <= 0) game_state = defeat_state;
 }
 
 void draw()
@@ -164,6 +166,7 @@ int main()
 
         draw();
         handle_states(delta);
+
         //update(delta);
         // DrawTexturePro(
         //     render_texture.texture,

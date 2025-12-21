@@ -8,9 +8,9 @@
 
 #include <cmath>
 
-void move_paddle(const float angle_deg)
+void update_paddle(const float move_angle_deg)
 {
-    paddle_pos.ang_d += angle_deg;
+    paddle_pos.ang_d += move_angle_deg;
     paddle_pos.ang_r = DEG2RAD * paddle_pos.ang_d;
 
     b2Body_SetTransform(paddles[0]._body_id, paddle_pos.to_cartesian_b2(), b2MakeRot(DEG2RAD * (paddle_pos.ang_d + 90.0f)));
@@ -64,7 +64,7 @@ void spawn_paddle()
     b2Body_Enable(paddles[0]._body_id);
     paddles[0]._to_draw = true;
 
-    move_paddle(0);
+    update_paddle(0);
 // outer_loop_end:;
 }
 

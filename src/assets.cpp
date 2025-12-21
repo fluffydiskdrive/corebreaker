@@ -24,9 +24,11 @@ void load_textures()
     ball_texture = LoadTexture(ASSETS_PATH"images/ball/ball0.png");
     core_texture = LoadTexture(ASSETS_PATH"images/core.png");
     arrow_texture = LoadTexture(ASSETS_PATH"images/arrow.png");
-    paddle_x2_bonus_texture = LoadTexture(ASSETS_PATH"images/paddle_x2_bonus.png");
+    paddle_x4_bonus_texture = LoadTexture(ASSETS_PATH"images/paddle_x2_bonus.png");
     invincibility_bonus_texture = LoadTexture(ASSETS_PATH"images/invincibility_bonus.png");
     heart_texture = LoadTexture(ASSETS_PATH"images/heart.png");
+    laser_body_texture = LoadTexture(ASSETS_PATH"images/laser_body.png");
+    laser_end_texture = LoadTexture(ASSETS_PATH"images/laser_end.png");
 }
 
 void unload_textures()

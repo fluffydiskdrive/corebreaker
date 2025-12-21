@@ -16,7 +16,7 @@ inline int lives;
 inline Vector2p paddle_pos = {0, 0};
 
 void spawn_paddle();
-void move_paddle(float angle_deg);
+void update_paddle(float move_angle_deg);
 // bool is_colliding_with_paddle(Vector2 pos, Vector2 size);
 
 #endif // PADDLE_H

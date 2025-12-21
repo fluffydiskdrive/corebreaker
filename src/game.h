@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <random>
 #include <vector>
 
 constexpr char VOID = ' ';
@@ -14,10 +15,10 @@ constexpr char BLOCK = '@';
 constexpr char PADDLE = 'P';
 constexpr char CORE = '!';
 constexpr char BALL = '*';
-constexpr char BONUS_PADDLE_X2 = '%';
+constexpr char BONUS_PADDLE_X4 = '4';
 constexpr char BONUS_INVINCIBILITY = '&';
 
-constexpr char type_box[5] = {WALL, BLOCK, CORE, BONUS_INVINCIBILITY, BONUS_PADDLE_X2};
+constexpr char type_box[5] = {WALL, BLOCK, CORE, BONUS_INVINCIBILITY, BONUS_PADDLE_X4};
 
 constexpr int BLOCK_SIZE = 16;
 
@@ -34,9 +35,41 @@ inline std::vector<Body> bodies;
 inline std::vector<Body> paddles;
 
 inline bool level_passed;
+inline bool boss_attacking;
 
 inline powerup invincibility;
-inline powerup paddle_x2;
+inline powerup paddle_x4;
+
+
+struct timer {
+    float duration;
+    float time;
+    bool paused;
+
+    bool time_out;
+
+    timer(){paused = true;}
+    timer(const float dur) : duration(dur){paused = true; time = duration; time_out = true;}
+    timer(const float dur, const bool paus, const bool out) : duration(dur){paused = paus; time = duration; time_out = out;}
+
+    void update_timer(const float delta)
+    {
+        if (!paused && !time_out) time += delta;
+        if (time >= duration) time_out = true;
+    }
+
+    void restart_timer()
+    {
+        time = 0;
+        time_out = false;
+        paused = false;
+    }
+};
+
+inline float norm_ang(float angle_d)
+{
+    return std::fmod(angle_d, 360);
+}
 
 
 struct RectangleR {
@@ -49,6 +82,13 @@ struct RectangleR {
 inline bool in(const auto& val, const auto& arr)
 {
     return std::find(std::begin(arr), std::end(arr), val) != std::end(arr);
+}
+
+inline int randint(int min, int max)
+{
+    static std::mt19937 rng(std::random_device {}());
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(rng);
 }
 
 struct Vector2p {
@@ -135,7 +175,7 @@ enum collision_type : int {
     COLLISION_BALL,
     COLLISION_PADDLE,
     COLLISION_WALL,
-    COLLISION_BONUS_PADDLE_X2,
+    COLLISION_BONUS_PADDLE_X4,
     COLLISION_BONUS_INVINCIBILITY,
     COLLISION_CORE
 };
@@ -222,9 +262,10 @@ inline level level_5 = {
     true
 };
 
-inline constexpr size_t level_count = 5;
+inline constexpr size_t level_count = 1;
 inline level levels[level_count] = {
-    level_1, level_2, level_3, level_4, level_5
+    // level_1, level_2, level_3, level_4,
+    level_5
 };
 
 inline game_state game_state = menu_state;

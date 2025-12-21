@@ -8,6 +8,7 @@ void draw_ui();
 void draw_level();
 void draw_paddle();
 void draw_ball();
+void draw_boss_attack();
 void draw_pause_menu();
 void init_state_menu();
 void draw_state_menu();

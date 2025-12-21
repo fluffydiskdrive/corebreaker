@@ -12,32 +12,13 @@
 
 #include <vector>
 
-struct timer {
-    float duration;
-    float time;
-    bool paused;
-
-    bool time_out;
-
-    timer(){paused = true;}
-    timer(const float dur) : duration(dur){paused = true; time = 0; time_out = false;}
-
-    void update_timer(const float delta)
-    {
-        if (!paused && !time_out) time += delta;
-        if (time >= duration) time_out = true;
-    }
-
-    void restart_timer()
-    {
-        time = 0;
-        time_out = false;
-        paused = false;
-    }
-};
-
 timer boss_attack_recharge_timer;
 timer boss_attack_timer;
+timer paddle_invincible_timer;
+
+float base_angle_start;
+float base_angle_end;
+float base_angle;
 
 
 Body init_box(Vector2 position, CustomBodyData* box_data, Texture2D* tex)
@@ -82,8 +63,16 @@ void load_level(const int offset)
     }
 
     if (levels[current_level_index].boss_level) {
-        boss_attack_recharge_timer = timer{7.0f};
+        boss_attack_recharge_timer = timer{5.0f};
+        boss_attack_recharge_timer.restart_timer();
         boss_attack_timer = timer{3.0f};
+        //boss_attack_timer.paused = false;
+        paddle_invincible_timer = timer{3.0f};
+        //paddle_invincible_timer.paused = false;
+        //boss_attack_recharge_timer.restart_timer();
+        base_angle_start = randint(0, 90);
+        base_angle_end = base_angle_start + randint(10, 40);
+        base_angle = base_angle_start;
     }
 
     const size_t rows = levels[current_level_index].rows;
@@ -117,9 +106,9 @@ void load_level(const int offset)
                     tex = &invincibility_bonus_texture;
                     break;
                 }
-                case BONUS_PADDLE_X2: {
-                    box_data = new CustomBodyData {COLLISION_BONUS_PADDLE_X2};
-                    tex = &paddle_x2_bonus_texture;
+                case BONUS_PADDLE_X4: {
+                    box_data = new CustomBodyData {COLLISION_BONUS_PADDLE_X4};
+                    tex = &paddle_x4_bonus_texture;
                     break;
                 }
                 case WALL: {
@@ -136,7 +125,7 @@ void load_level(const int offset)
             }
         }
     }
-    current_level = new level { rows, columns, current_level_data };
+    current_level = new level { rows, columns, current_level_data, levels[current_level_index].boss_level};
 
     spawn_paddle();
     spawn_ball();
@@ -214,7 +203,7 @@ void contact_ball()
 
 
         switch (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type) {
-        case COLLISION_BONUS_PADDLE_X2: paddle_x2._active = true; for_box(end_touch_event); break;
+        case COLLISION_BONUS_PADDLE_X4: paddle_x4._active = true; for_box(end_touch_event); break;
         case COLLISION_BOX: {
             for_box(end_touch_event);
             //paddle_x2.active = true;
@@ -233,10 +222,36 @@ void contact_ball()
 
 void boss_attack(float delta)
 {
-    for (int i = 0; i < 4; ++i) {
 
+
+    if (base_angle == base_angle_start) boss_attack_timer.restart_timer();
+    base_angle += (base_angle_end / boss_attack_timer.duration * delta);
+
+    if (boss_attack_timer.time_out) {
+        boss_attack_recharge_timer.restart_timer();
+        base_angle_start = randint(0, 90);
+        base_angle_end = base_angle_start + randint(10, 40);
+        base_angle = base_angle_start;
+    }
+    base_angle = norm_ang(base_angle);
+
+
+    attack_draw();
+    if (((norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 8.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle - 8.0f))
+        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 98.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 82.0f))
+        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 188.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 172.0f))
+        || (norm_ang(paddle_pos.ang_d) <= norm_ang(base_angle + 278.0f) && norm_ang(paddle_pos.ang_d) >= norm_ang(base_angle + 262.0f)))
+        && paddle_invincible_timer.time_out)
+        {
+        --lives;
+        paddle_invincible_timer.restart_timer();
     }
 }
+
+constexpr float paddle_flash_interval = 0.1f;
+float paddle_flash_prev_time = 0.0f;
+auto paddle_flash_timer = timer{paddle_flash_interval, false, false};
+
 
 void update_level(float delta)
 {
@@ -244,9 +259,58 @@ void update_level(float delta)
     destroy_boxes();
     if (current_level->boss_level) {
         boss_attack_recharge_timer.update_timer(delta);
-        if (boss_attack_recharge_timer.time_out) boss_attack(delta);
+        paddle_invincible_timer.update_timer(delta);
+        boss_attack_timer.update_timer(delta);
+        paddle_flash_timer.update_timer(delta);
+
+        if (paddle_flash_timer.time_out && !paddle_invincible_timer.time_out) {
+            for (int i = 0; i < (paddle_x4._active ? paddles.size() : 1); ++i) {
+                paddles[i]._to_draw = !paddles[i]._to_draw;
+            }
+            paddle_flash_timer.restart_timer();
+        }
+
+        if (boss_attack_recharge_timer.time_out) {
+            //boss_attack_timer.restart_timer();
+            boss_attack(delta);
+        }
+        // DrawTextPro(menu_font, std::to_string(boss_attack_recharge_timer.time).c_str(), {-30.0f, -20}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+        // DrawTextPro(menu_font, std::to_string(boss_attack_timer.time).c_str(), {-30.0f, -10.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+        // DrawTextPro(menu_font, std::to_string(paddle_invincible_timer.time).c_str(), {-30.0f, 0.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+        // DrawTextPro(menu_font, std::to_string(paddle_flash_timer.time).c_str(), {-30.0f, 10.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
     }
 
+}
+
+void attack_draw()
+{
+    const float distance = paddle_pos.dist;
+    for (int i = 0; i < 4; ++i) {
+            for (int j = 0; distance - j * 1.6 > 3.2; ++j) {
+                Vector2 target_pos = Vector2p( j * 16 * GRAPH_SCALING, base_angle + 90.0f * i).to_cartesian();
+                target_pos = {target_pos.x + std::cosf((90.0f * (i+1) + base_angle) * DEG2RAD) * laser_body_texture.width / 2.0f * GRAPH_SCALING, target_pos.y + std::sinf((90.0f * (i+1) + base_angle) * DEG2RAD) * laser_body_texture.width / 2.0f * GRAPH_SCALING};
+                DrawTexturePro(
+                    laser_body_texture,
+                    Rectangle(0, 0, laser_body_texture.width, laser_body_texture.height),
+                    Rectangle(target_pos.x, target_pos.y, laser_body_texture.width * GRAPH_SCALING, laser_body_texture.height * GRAPH_SCALING),
+                    {0, 0},
+                    base_angle + 90.0f * (i - 1),
+                    WHITE);
+            }
+        // auto target_pos = Vector2p{distance - 3.2f, base_angle + 90.0f * i};
+        // target_pos = target_pos + Vector2p{0, atan2f(laser_end_texture.width / 2.0f, target_pos.dist)};
+        Vector2 target_pos = Vector2p( distance - 3.2f, base_angle + 90.0f * i).to_cartesian();
+        target_pos = {target_pos.x + std::cosf((90.0f * (i + 1) + base_angle) * DEG2RAD) * laser_end_texture.width / 2.0f * GRAPH_SCALING, target_pos.y + std::sinf((90.0f * (i + 1) + base_angle) * DEG2RAD) * laser_end_texture.width / 2.0f * GRAPH_SCALING};
+        DrawTexturePro(
+                laser_end_texture,
+                Rectangle(0, 0, laser_end_texture.width, laser_end_texture.height),
+                Rectangle(target_pos.x, target_pos.y, laser_end_texture.width * GRAPH_SCALING, laser_end_texture.height * GRAPH_SCALING),
+                {0, 0},
+                base_angle + 90.0f * (i - 1),
+                WHITE);
+
+        //DrawLineEx({0, 0}, Vector2p{paddle_pos.dist, base_angle + 90 * i}.to_cartesian(), 1.0f, GREEN);
+    }
 }
 
 // bool is_colliding_with_level_cell(const Vector2 pos, const Vector2 size, const char cell)

@@ -74,7 +74,7 @@ void spawn_ball()
             },
              5.0f
             );
-        paddle_x2 = powerup(
+        paddle_x4 = powerup(
             [](bool active) {
                 for (int i = 1; i < 4; ++i) {
                     if (active){

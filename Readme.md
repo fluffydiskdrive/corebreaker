@@ -1,136 +1,50 @@
-# Simple Breakout
+# COREBREAKER
 
-![Breakout](https://i.postimg.cc/FzBNx6FK/Screenshot-20251103-175907.png)
+![Breakout](https://i.postimg.cc/VNt3G1mf/main-screenshot.png)
 
 ---
 
-The primary goal of this project is to build a simple [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) game written in C++ using the [raylib](https://www.raylib.com) graphics library. In this game, the player controls a paddle that keeps the ball within the level, which destroys blocks upon contact. The objective of the game is to navigate through a series of levels, cleaning all levels of blocks.
-
-The game should adhere to the best structured and procedural programming principles. You should strive to effectively utilize structured programming constructs such as selection constructs and loops. Additionally, endeavor to achieve procedural decomposition of your code into functions. Ensure consistent formatting in your code, adhering to coding style best practices, including proper naming, indentation, use of white spaces, blank lines, and comments.
-
-Be creative, and ensure to implement all the requirements outlined below in your project.
+COREBREAKER is a Breakout game with circular paddle motion with [Box2D](https://box2d.org) physics engine.
 
 ---
 
 ## Core Requirements
 
-* **Title or Menu Screen**: The game should start with a title screen featuring a game logo and a message to start the game. Alternatively, it could be a menu screen with options to start the game, view the instructions, or quit the game.
+* **Title or Menu Screen**: The game starts with a title screen featuring a game logo and a message to start the game.
 
-![Title Screen](https://i.postimg.cc/ZRXBRS8N/Screenshot-20251029-161437.png)
+![Title Screen](https://i.postimg.cc/4yKxT7CC/title_screenshot.png)
 
-* **Game Screen**: From the title or menu screen, the player should be able to start the game. The game screen displays the paddle, the ball, and the level. The player moves the paddle using the keyboard. The goal is to move from one level to the next by destroying all the blocks in every level. In our game, the objective of the player is to reach the end by passing through all the levels.
+* **Game Screen**: From the title or menu screen, the player is able to start the game. The game screen displays the paddle, the ball, the level, and the UI. The player moves the paddle using the keyboard. The player is also able to set to initial angle of the ball trajectory. If the ball leaves the world confines determined by the grey circle, the player loses 1 life. For each level, 5 lives are given. Losing all lives will result in losing the game. The goal is to move from one level to the next by destroying all the blocks in every level or destroying the core at the center of each level. In the game, the objective of the player is to reach the end by passing through all the levels.
 
-![Game Screen, Level 2](https://i.postimg.cc/FzBNx6FK/Screenshot-20251103-175907.png)
+![Game Screen, Level 2](https://i.postimg.cc/cCKLNKpP/screenshot.png)
 
-* **Pause Screen**: The player should be able to pause the game by pressing the Escape key. A 'Pause' screen appears with an option to resume the game. Pressing the Escape key resumes the game.
+* **Pause Screen**: The player is able to pause the game by pressing the ESCAPE key. A 'Pause' screen appears with an option to resume the game. Pressing the ESCAPE key resumes the game.
 
-![Pause Screen](https://i.postimg.cc/Gt5djf3h/Screenshot-20251103-175849.png)
+![Pause Screen](https://i.postimg.cc/Y04Cw453/pause_screenshot.png)
 
-* **Victory Screen**: Upon passing through all the levels, a victory screen displays a congratulatory message, allowing the player to return to the title screen. Some animation, possibly from lab class exercises, should play in the background to indicate the game's completion. You are at liberty to come up with the animation.
+* **Victory Screen**: Upon passing through all the levels, a victory screen displays a congratulatory message, allowing the player to return to the first level. An animation plays in the background to indicate the game's completion.
 
-![Victory Screen](https://i.postimg.cc/CL5KfGhW/Screenshot-20251103-175933.png)
+![Victory Screen](https://i.postimg.cc/WzD1PFRs/victory_screenshot.png)
 
 ## Additional Requirements
 
-* **Additional Levels**: Add at least *three extra levels* to the game. These levels should be more challenging than the ones given. You may add more levels if you want.
+* **Additional Levels**: The game has 5 levels, one of them is the final boss level. In that level, the core has 9 lives and shoots laser beams across the world. Touching a beam with the paddle will take 1 life from player.
 
-* **Additional Game Elements**: Introduce at least *three new elements* to the game. These could include collectibles, moving obstacles, additional balls, turning the game 3-D, special time events, portals, more advanced bounce-off physics, improved collision detecion, or other modifications to the gameplay. Let your creativity guide you.
+* **Additional Game Elements**: The physics processing has been transferred to the [Box2D engine](https://box2d.org). The paddle motion has been made circular.
 
-* **Game Over Screen**: Implement *a 'Game Over' screen* that displays a message when the player loses the game, such as when the player runs out of lives or the ball leaves the level. This screen should allow the player to return to the title screen or try again.
+* **Game Over Screen**: The Game Over screen is displayed when the player loses all their lives. The player is able to restart the game with the ESCAPE key.
 
-* **Additional Sounds**: Add at least *three new sounds* to the game. These sounds could accompany actions like bouncing off obstacles, picking up collectibles, or exiting the final level.
+* **Additional Sounds**: Four new sounds are present in the game. All the sounds are royalty-free.
 
-* **Background Music**: Incorporate at least *one music track* into the game. This track should play on at least one of the screens. Ensure the track is royalty-free or that you have usage rights. Store the music files in the `data/music/` directory and keep them reasonably sized.
+* **Background Music**: Two music tracks are present in the game – the main theme and the boss theme. The music is royalty-free.
 
-## Practical Requirements
-
-* Develop the code **independently of your peers** and maintain a **detailed project commit history**. Be aware that points will be withheld for any suspicion of code plagiarism, even if it's unfounded. Additionally, consistent progress must be evident in your project commit history to receive any points at all.
-
-* Rewrite the `Readme.md` file with a description of your game and a list of the features that you have implemented. **Note that partially implementing some features is preferable to not implementing any.**
-
-* Ensure that the game is playable and contains all necessary files. **It should be straightforward for the instructor to set up and start the game with minimal effort.**
-
-## Deliverables
-
-* Develop the game within the `<repository>` directory. This directory should include a `data/` subdirectory containing all game assets (images, sprites, fonts, sounds, etc.).
-
-* Organize your code into `.h` and `.cpp` files. Each file should contain related constants, variables, and functions.
-
-* Place your main game loop into the `breakout.cpp` file.
-
-Upon completion, your Project directory should have an organized structure similar to the following example:
-
-```
-.
-└── <repository>
-    ├── data
-    │   ├── fonts
-    │   │   └── ...
-    │   ├── images
-    │   │   └── ...
-    │   ├── music
-    │   │   └── ...
-    │   └── sounds
-    │       └── ...
-    ├── breakout.cpp
-    ├── game.h
-    ├── <various header and C++ files>.h/cpp
-    ├── ... (.idea, .gitignore, .clang-format, CMakeLists.txt, other files)
-    └── Readme.md
-```
-
-[Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) our repository first, then clone it. If you skip this step, you will not be able to push your changes. Commit regularly, such as after implementing a feature (ensure the program is in a compilable state).
-
----
-
-## Project Setup Notes
-
-Set up the raylib project as you have done in previous labs for graphical assignments.
-
-Before attempting to run the code for the `breakout` target, please ensure that you set the `Working directory` correctly in your CLion IDE.
-
-The current working directory must point to the directory containing the necessary resource files (e.g., `data/images/`, `data/fonts/`, and `data/sound|music/`). Failure to do so will result in these resources not being loaded properly, and you will not see or hear the intended visuals or sounds in the game.
-
-To set the working directory:
-
-1. Open the `Run` menu and find the `Edit configurations` button there in CLion.
-2. Select the `breakout` target.
-3. Locate the `Working directory` field.
-4. Set it to the `$ProjectFileDir$` value (this ensures it points to the root project directory with the `data` folder).
-5. Save your configuration and run the target again.
-
-If you encounter any issues, double-check that the paths to the resource files are correct relative to the working directory.
-
-## Implementation Tips
-
-- Read the raylib [cheatsheet](https://www.raylib.com/cheatsheet/cheatsheet.html) to discover what is possible.
-- Explore the raylib [examples](https://www.raylib.com/examples.html) for inspiration.
-- Spend time searching for ways to break your program: that will help you eliminate edge cases and bugs.
-- Log values and verify their correctness if stumbling across a bug.
-- Use compilation and linking errors to your advantage: _read_ them.
-- Use the debug tool to resolve crashes.
-
-## Deadline
-
-Refer to the specific course or assignment page on Moodle for detailed information about deadlines and the grading rubric.
-
-## Links
-
-### raylib
-
-* [Wiki](https://github.com/raysan5/raylib/wiki)
-* [Cheatsheet](https://www.raylib.com/cheatsheet/cheatsheet.html)
-* [Examples](https://www.raylib.com/examples.html)
-
-### Tools
-
-* [libresprite](https://libresprite.github.io/#!/)
-* [jsfxr](https://sfxr.me/)
-
-## Books
-
-* Introduction to Programming with C++, 3rd Edition by Daniel Liang
+## Controls
+* **A, D** – move paddle / starter angle selection
+* **SPACE** – launch the ball with selected angle 
 
 ## Credits
 
-* [Luna Maltseva](https://github.com/lunamaltseva)
+* [Luna Maltseva](https://github.com/lunamaltseva) – starter code
+* [Alim Loma](https://github.com/fluffydiskdrive) – further development, textures
+* [Pixabay](https://pixabay.com) – SFX
+* [FreeToUse](https://freetouse.com/) – music

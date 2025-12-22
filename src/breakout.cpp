@@ -77,8 +77,6 @@ void draw()
         draw_menu();
         break;
     case victory_state:
-        draw_state_menu();
-        break;
     case defeat_state:
         draw_state_menu();
         break;

@@ -14,7 +14,7 @@
 
 timer boss_attack_recharge_timer;
 timer boss_attack_timer;
-timer paddle_invincible_timer;
+timer core_flash_timer;
 
 float base_angle_start;
 float base_angle_end;
@@ -56,19 +56,20 @@ void load_level(const int offset, bool new_init)
         return;
     }
     if (new_init || offset) {
+        if (levels[current_level_index].boss_level) core_max_hp = 9; else core_max_hp = 1;
         lives = MAX_LIVES;
+        core_hp = core_max_hp;
         if (curr_level_data.size()) curr_level_data.clear();
         //for (int i = 0; i < levels[current_level_index].rows * levels[current_level_index].columns; ++i) curr_level_data->push_back(levels[current_level_index].data->[i]);
         curr_level_data = *levels[current_level_index].data;
     }
     if (current_level) {
-        if (!current_level->boss_level) core_hp = 10; else core_hp = 1;
         unload_level();
     }
 
-    core_max_hp = 1;
+    //core_max_hp = 1;
     BALL_SPEED = 15.0f;
-    PADDLE_SPEED = 1.0f;
+    PADDLE_SPEED = 1.25f;
     world_def = b2DefaultWorldDef();
     world_def.gravity = {0, 0};
     world_id = b2CreateWorld(&world_def);
@@ -80,12 +81,13 @@ void load_level(const int offset, bool new_init)
         boss_attack_timer = timer{3.0f};
         //boss_attack_timer.paused = false;
         paddle_invincible_timer = timer{3.0f};
+        core_flash_timer = timer{1.0f};
         //paddle_invincible_timer.paused = false;
         //boss_attack_recharge_timer.restart_timer();
         base_angle_start = randint(0, 180);
         base_angle_end = base_angle_start + randint(10, 40);
         base_angle = base_angle_start;
-        core_max_hp = 10;
+        core_max_hp = 9;
 
     }
 
@@ -223,7 +225,7 @@ void contact_ball()
 
 
         switch (static_cast<CustomBodyData*>(b2Body_GetUserData(b2Shape_GetBody(end_touch_event->shapeIdA)))->_collision_type) {
-        case COLLISION_BONUS_PADDLE_X4: paddle_x4._active = true; for_box(end_touch_event); break;
+        case COLLISION_BONUS_PADDLE_X4: PlaySound(powerup_sound); paddle_x4._active = true; for_box(end_touch_event); break;
         case COLLISION_BOX: {
             for_box(end_touch_event);
             //paddle_x2.active = true;
@@ -235,10 +237,11 @@ void contact_ball()
                 level_passed = true;
                 //load_level(1);
             }
+            core_flash_timer.restart_timer();
             break;
         }
         case COLLISION_WALL: break;
-        case COLLISION_BONUS_INVINCIBILITY: invincibility._active = true; for_box(end_touch_event); break;
+        case COLLISION_BONUS_INVINCIBILITY: PlaySound(powerup_sound); invincibility._active = true; for_box(end_touch_event); break;
         }
 
     }
@@ -251,6 +254,7 @@ void boss_attack(float delta)
     if (base_angle == base_angle_start) boss_attack_timer.restart_timer();
     //base_angle = base_angle_start + (boss_attack_timer.time + 0.01) / boss_attack_timer.duration * (base_angle_end - base_angle_start);
     base_angle += (base_angle_end / boss_attack_timer.duration * delta);
+    if (!IsSoundPlaying(laser_sound)) PlaySound(laser_sound);
 
 
 
@@ -262,9 +266,11 @@ void boss_attack(float delta)
         {
         --lives;
         paddle_invincible_timer.restart_timer();
+        PlaySound(death_sound);
     }
 
     if (boss_attack_timer.time_out) {
+        StopSound(laser_sound);
         boss_attack_recharge_timer.restart_timer();
         base_angle_start = randint(0, 180);
         base_angle_end = base_angle_start + randint(10, 40);
@@ -275,24 +281,47 @@ void boss_attack(float delta)
 
 constexpr float paddle_flash_interval = 0.1f;
 float paddle_flash_prev_time = 0.0f;
-auto paddle_flash_timer = timer{paddle_flash_interval, false, false};
+auto flash_timer = timer{paddle_flash_interval, false, false};
 
+void update_timers(float delta)
+{
+    boss_attack_recharge_timer.update_timer(delta);
+    paddle_invincible_timer.update_timer(delta);
+    boss_attack_timer.update_timer(delta);
+    flash_timer.update_timer(delta);
+    core_flash_timer.update_timer(delta);
+}
 
 void update_level(float delta)
 {
     contact_ball();
     destroy_boxes();
     if (current_level->boss_level) {
-        boss_attack_recharge_timer.update_timer(delta);
-        paddle_invincible_timer.update_timer(delta);
-        boss_attack_timer.update_timer(delta);
-        paddle_flash_timer.update_timer(delta);
+        if (IsMusicStreamPlaying(main_theme)) {PauseMusicStream(main_theme); ResumeMusicStream(boss_theme);}
+        update_timers(delta);
 
-        if (paddle_flash_timer.time_out && !paddle_invincible_timer.time_out) {
-            for (int i = 0; i < (paddle_x4._active ? paddles.size() : 1); ++i) {
-                paddles[i]._to_draw = !paddles[i]._to_draw;
+        if (flash_timer.time_out) {
+            if (!paddle_invincible_timer.time_out) {
+                for (int i = 0; i < (paddle_x4._active ? paddles.size() : 1); ++i) {
+                    paddles[i]._to_draw = !paddles[i]._to_draw;
+                }
             }
-            paddle_flash_timer.restart_timer();
+            if (!core_flash_timer.time_out) {
+                for (auto &i : boxes) {
+                    if (static_cast<CustomBodyData*>(b2Body_GetUserData(i._body_id))->_collision_type == COLLISION_CORE)
+                        i._to_draw = !i._to_draw;
+                }
+                // boxes[boxes.size() / 2]._to_draw = !boxes[boxes.size() / 2]._to_draw;
+
+            } else {
+                for (auto &i : boxes) {
+                    if (static_cast<CustomBodyData*>(b2Body_GetUserData(i._body_id))->_collision_type == COLLISION_CORE)
+                        if (!i._to_draw) i._to_draw = true;
+                }
+                // boxes[boxes.size() / 2]._to_draw = !boxes[boxes.size() / 2]._to_draw;
+
+            }
+            flash_timer.restart_timer();
         }
 
         if (boss_attack_recharge_timer.time_out) {
@@ -300,9 +329,11 @@ void update_level(float delta)
             boss_attack(delta);
         }
         // DrawTextPro(menu_font, std::to_string(boss_attack_recharge_timer.time).c_str(), {-30.0f, -20}, {0,0}, 0, 5.0f, 0.2f, WHITE);
-        // DrawTextPro(menu_font, std::to_string(boss_attack_timer.time).c_str(), {-30.0f, -10.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
-        // DrawTextPro(menu_font, std::to_string(paddle_invincible_timer.time).c_str(), {-30.0f, 0.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
-        // DrawTextPro(menu_font, std::to_string(paddle_flash_timer.time).c_str(), {-30.0f, 10.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+        DrawTextPro(menu_font, std::to_string(core_flash_timer.time).c_str(), {-30.0f, -10.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+        DrawTextPro(menu_font, std::to_string(paddle_invincible_timer.time).c_str(), {-30.0f, 0.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+        DrawTextPro(menu_font, std::to_string(flash_timer.time).c_str(), {-30.0f, 10.0f}, {0,0}, 0, 5.0f, 0.2f, WHITE);
+    } else {
+        if (IsMusicStreamPlaying(boss_theme)) {PauseMusicStream(boss_theme); ResumeMusicStream(main_theme);}
     }
 
 }

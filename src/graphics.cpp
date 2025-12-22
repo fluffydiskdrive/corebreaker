@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#define CYAN (CLITERAL(Color) { 0, 255, 255, 255 })
 
 struct Text {
     std::string str;
@@ -50,9 +51,9 @@ void draw_image(const Texture2D& image, const float x, const float y, const floa
     draw_image(image, x, y, size, size, 0);
 }
 
-void draw_sprite(sprite& sprite, const float x, const float y, const float width, const float height)
+void draw_sprite(sprite& sprite, const float x, const float y, const float width, const float height, const float rotation)
 {
-    draw_image(sprite.frames[sprite.frame_index], x, y, width, height, 0);
+    draw_image(sprite.frames[sprite.frame_index], x, y, width, height, rotation);
 
     if (sprite.prev_game_frame == game_frame) {
         return;
@@ -70,9 +71,9 @@ void draw_sprite(sprite& sprite, const float x, const float y, const float width
     sprite.prev_game_frame = game_frame;
 }
 
-void draw_sprite(sprite& sprite, const float x, const float y, const float size)
+void draw_sprite(sprite& sprite, const float x, const float y, const float size, const float rotation)
 {
-    draw_sprite(sprite, x, y, size, size);
+    draw_sprite(sprite, x, y, size, size, rotation);
 }
 
 void draw_text(const Text& text)
@@ -106,32 +107,44 @@ void draw_menu()
     ClearBackground(BLACK);
 
     const Text game_title = {
-        "Breakout!",
+        "COREBREAKER",
         { 0.0f, 0.0f },
         10.0f,
-        LIGHTGRAY,
+        WHITE,
         .18f,
         &title_font
     };
     draw_text(game_title);
 
+    const Text game_subtitle_1 = {
+        "COREBREAKER",
+        { 0.0f, 5.0f },
+        1.5f,
+        GRAY,
+        5.0f,
+        &menu_font
+    };
+    draw_text(game_subtitle_1);
+
     const Text game_subtitle = {
-        "Press Enter to Start",
-        { 0.0f, 0.01f },
-        2.0f,
+        "PRESS ENTER",
+        { 0.0f, 10.0f },
+        1.5f,
         LIGHTGRAY,
         .01f,
         &menu_font
     };
     draw_text(game_subtitle);
+
+    DrawTextureEx(ball_texture, {-29.45, -3.22}, 0.0f, 0.39, WHITE);
 }
 
 void draw_ui()
 {
-    DrawTextureEx(heart_texture, {viewport_size.x / 2 - 16.0f, -(heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f}, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
+    DrawTextureEx(heart_texture, {viewport_size.x / 2 - 16.0f, 10.0f -(heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f}, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
     const Text lives_counter = {
         std::to_string(lives),
-        {(viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), 0},
+        {(viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), 10.0f},
         4.0f,
         BLACK,
         0.1f,
@@ -140,24 +153,62 @@ void draw_ui()
     draw_text(lives_counter);
 
     const Text level_counter = {
-        "LEVEL " + std::to_string(current_level_index + 1) + " OUT OF " + std::to_string(level_count),
-        { 0.0f, -viewport_size.y / 2 + 5.0f},
-        4.0f,
-        WHITE,
-        0.4f,
+        "LEVEL " + std::to_string(current_level_index + 1),
+        { -viewport_size.x / 2.0f + 12.0f, -viewport_size.y / 2 + 5.0f},
+        2.0f,
+        DARKGREEN,
+        0.15f,
         &menu_font
     };
     draw_text(level_counter);
 
     const Text boxes_remaining = {
         "BLOCKS " + std::to_string(blocks_remaining),
-        { 0.0f, viewport_size.y / 2 - 5.0f},
-        4.0f,
-        WHITE,
-        0.4f,
+        { -viewport_size.x / 2.0f + 14.15f, -viewport_size.y / 2 + 7.0f},
+        2.0f,
+        LIGHTGRAY,
+        0.15f,
         &menu_font
     };
     draw_text(boxes_remaining);
+
+    if (invincibility._active) {
+        DrawTextureEx(invincibility_bonus_texture, {-viewport_size.x / 2.0f + 7.0f, -5}, 0.0, GRAPH_SCALING * 2, WHITE);
+        const Text invincibility_timer_text = {
+            std::to_string(static_cast<int>(roundf(invincibility.time_remaining_s))),
+            { -viewport_size.x / 2.0f + 12.0f, -5 + invincibility_bonus_texture.height / 2.0f * GRAPH_SCALING * 2},
+            2.0f,
+            LIGHTGRAY,
+            0.15f,
+            &menu_font
+        };
+        draw_text(invincibility_timer_text);
+    }
+    if (paddle_x4._active) {
+        DrawTextureEx(paddle_x4_bonus_texture, {-viewport_size.x / 2.0f + 7.0f, 0}, 0.0, GRAPH_SCALING * 2, WHITE);
+        const Text paddle_x4_timer_text = {
+            std::to_string(static_cast<int>(roundf(paddle_x4.time_remaining_s))),
+            { -viewport_size.x / 2.0f + 12.0f, 0 + invincibility_bonus_texture.height / 2.0f * GRAPH_SCALING * 2},
+            2.0f,
+            LIGHTGRAY,
+            0.15f,
+            &menu_font
+        };
+        draw_text(paddle_x4_timer_text);
+    }
+
+    if (core_max_hp > 1) {
+        DrawTextureEx(heart_black_texture, {viewport_size.x / 2 - 16.0f, -10.0f -(heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f}, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
+        const Text core_lives_counter = {
+            std::to_string(core_hp),
+            {(viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), -10.0f},
+            4.0f,
+            WHITE,
+            0.1f,
+            &menu_font
+        };
+        draw_text(core_lives_counter);
+    }
 }
 
 void draw_level()
@@ -221,45 +272,87 @@ void draw_pause_menu()
     ClearBackground(BLACK);
 
     const Text paused_title = {
-        "Press Escape to Resume",
-        { 0.0f, 0.0f },
-        4.0f,
-        LIGHTGRAY,
+        "PAUSED",
+        { 0.0f, -2.0f },
+        2.5f,
+        WHITE,
         .06f,
         &menu_font
     };
     draw_text(paused_title);
+    const Text paused_subtitle = {
+        "PRESS ESCAPE TO RESUME",
+        { 0.0f, .7f },
+        0.9f,
+        LIGHTGRAY,
+        .06f,
+        &menu_font
+    };
+    draw_text(paused_subtitle);
 }
+
+float core_tex_scale;
+float paddle_tex_pos;
+float paddle_tex_rot;
+unsigned char paddle_tex_tint;
 
 void init_state_menu()
 {
-    if (game_state == victory_state || game_state == defeat_state){
-        for (size_t i = 0; i < victory_balls_count; ++i) {
-            victory_balls_pos[i] = {viewport_origin.x + victory_balls_size, viewport_origin.y + victory_balls_size};
-            victory_balls_vel[i] = {
-                std::cosf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
-                std::sinf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
-            };
-        }
+    // if (game_state == victory_state || game_state == defeat_state){
+    //     for (size_t i = 0; i < victory_balls_count; ++i) {
+    //         victory_balls_pos[i] = {viewport_origin.x + victory_balls_size, viewport_origin.y + victory_balls_size};
+    //         victory_balls_vel[i] = {
+    //             std::cosf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
+    //             std::sinf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
+    //         };
+    //     }
+    // }
+    anim_timer = timer{2.0f};
+    anim_timer.restart_timer();
+    switch (game_state) {
+    case victory_state:{
+        core_tex_scale = 0;
+        break;
+    }
+    case defeat_state: {
+        paddle_tex_pos = -50.0f;
+        paddle_tex_rot = -30.0f;
+        paddle_tex_tint = 80;
+    }
     }
     //inited_victory_state = true;
 }
 
 void animate_state_menu()
 {
-    if (game_state == victory_state || game_state == defeat_state) {
-        for (size_t i = 0; i < victory_balls_count; ++i) {
-            if (victory_balls_pos[i].x + victory_balls_vel[i].x > (viewport_origin.x + viewport_size.x) || victory_balls_pos[i].x + victory_balls_vel[i].x < viewport_origin.x) {
-                victory_balls_vel[i].x *= -1.0f;
+    // if (game_state == victory_state || game_state == defeat_state) {
+    //     for (size_t i = 0; i < victory_balls_count; ++i) {
+    //         if (victory_balls_pos[i].x + victory_balls_vel[i].x > (viewport_origin.x + viewport_size.x) || victory_balls_pos[i].x + victory_balls_vel[i].x < viewport_origin.x) {
+    //             victory_balls_vel[i].x *= -1.0f;
+    //         }
+    //         if (victory_balls_pos[i].y + victory_balls_vel[i].y > (viewport_origin.y + viewport_size.y)|| victory_balls_pos[i].y + victory_balls_vel[i].y < viewport_origin.y) {
+    //             victory_balls_vel[i].y *= -1.0f;
+    //         }
+    //         victory_balls_pos[i] = {
+    //             victory_balls_pos[i].x + victory_balls_vel[i].x,
+    //             victory_balls_pos[i].y + victory_balls_vel[i].y
+    //         };
+    //     }
+    // }
+    switch (game_state) {
+    case victory_state: {
+        if (core_tex_scale < 15) core_tex_scale += 0.08;
+        break;
+    }
+    case defeat_state: {
+        if (paddle_tex_pos < 2.0f) paddle_tex_pos += 0.4;
+        else {
+            if (paddle_tex_rot < 0){ paddle_tex_rot += 0.8; paddle_tex_pos += 0.008;}
+            else {
+                if (paddle_tex_tint > 0) paddle_tex_tint -= 1;
             }
-            if (victory_balls_pos[i].y + victory_balls_vel[i].y > (viewport_origin.y + viewport_size.y)|| victory_balls_pos[i].y + victory_balls_vel[i].y < viewport_origin.y) {
-                victory_balls_vel[i].y *= -1.0f;
-            }
-            victory_balls_pos[i] = {
-                victory_balls_pos[i].x + victory_balls_vel[i].x,
-                victory_balls_pos[i].y + victory_balls_vel[i].y
-            };
         }
+    }
     }
 }
 
@@ -269,25 +362,27 @@ void draw_state_menu()
 
     DrawRectangleV(viewport_origin, viewport_size, { 0, 0, 0, 50 });
 
-    for (const auto& [x, y] : victory_balls_pos) {
-        DrawCircleV({ x, y }, victory_balls_size, WHITE);
-    }
+    // for (const auto& [x, y] : victory_balls_pos) {
+    //     DrawCircleV({ x, y }, victory_balls_size, WHITE);
+    // }
 
     if (game_state == victory_state){
+        DrawTextureEx(core_tex_scale < 15 ? core_texture : core_victory_texture, {-core_texture.width / 2.0f * core_tex_scale * GRAPH_SCALING, -core_texture.height / 2.0f * core_tex_scale * GRAPH_SCALING}, 0.0f, GRAPH_SCALING * core_tex_scale, DARKGRAY);
         const Text victory_title = {
-            "Victory!",
+            "VICTORY!",
             { 0.0f, 0.0f },
-            10.0f,
-            RED,
+            6.0f,
+            CYAN,
             .06f,
             &menu_font
         };
         draw_text(victory_title);
     } else if (game_state == defeat_state) {
+        DrawTextureEx(paddle_texture, {-paddle_texture.width / 2.0f * 5 * GRAPH_SCALING, paddle_tex_pos}, paddle_tex_rot, GRAPH_SCALING * 5, Color{paddle_tex_tint, paddle_tex_tint, paddle_tex_tint, 255});
         const Text defeat_title = {
-            "You lose!",
+            "DEFEAT",
             { 0.0f, 0.0f },
-            10.0f,
+            6.0f,
             RED,
             .06f,
             &menu_font
@@ -295,11 +390,11 @@ void draw_state_menu()
         draw_text(defeat_title);
     }
     const Text subtitle = {
-            "Press Enter to Restart",
-            { 0.0f, 0.01f },
-            2.0f,
-            WHITE,
-            .02f,
+            "PRESS ENTER TO RESTART",
+            { 0.0f, 5.5f },
+            1.0f,
+            GRAY,
+            .01f,
             &menu_font
         };
     draw_text(subtitle);

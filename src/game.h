@@ -40,6 +40,8 @@ inline bool boss_attacking;
 inline powerup invincibility;
 inline powerup paddle_x4;
 
+inline Body core;
+
 inline int blocks_remaining;
 
 constexpr int MAX_LIVES = 5;
@@ -69,6 +71,9 @@ struct timer {
         paused = false;
     }
 };
+
+inline timer paddle_invincible_timer;
+inline timer anim_timer;
 
 inline float norm_ang(float angle_d)
 {
@@ -193,7 +198,7 @@ inline std::vector level_1_data = {
     ' ',' ','@','@','@','@','@',' ',' ',
     ' ',' ',' ','@','@','#',' ',' ',' ',
     ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    '%',' ',' ',' ',' ',' ',' ',' ','&'
+    '4',' ',' ',' ',' ',' ',' ',' ','&'
 };
 
 inline level level_1 = {
@@ -266,11 +271,11 @@ inline level level_5 = {
     true
 };
 
-inline constexpr size_t level_count = 2;
+inline constexpr size_t level_count = 1;
 inline level levels[level_count] = {
     level_1,
     // level_2, level_3, level_4,
-    level_5
+    //level_5
 };
 
 inline game_state game_state = menu_state;

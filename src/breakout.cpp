@@ -56,7 +56,9 @@ void update(float delta)
     if (!is_ball_inside_level() && !invincibility._active) {
             game_state = dir_choice_state;
             load_level();
-            PlaySound(lose_sound);
+            PlaySound(death_sound);
+        if (IsSoundPlaying(laser_sound)) StopSound(laser_sound);
+            paddle_invincible_timer.restart_timer();
             --lives;
     } else if (level_passed) {
         game_state = dir_choice_state;
@@ -65,7 +67,7 @@ void update(float delta)
         level_passed = false;
 
     }
-    if (lives <= 0) game_state = defeat_state;
+    if (lives <= 0) {game_state = defeat_state; StopMusicStream(main_theme); StopMusicStream(boss_theme); PlaySound(lose_sound);}
 }
 
 void draw()
@@ -94,7 +96,7 @@ void init_game()
     camera = Camera2D();
     camera.target = {0, 0};
     camera.offset = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
-    camera.zoom = 12.0f;
+    camera.zoom = 15.0f;
 
     viewport_size = Vector2{GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom};
     viewport_origin = Vector2{-viewport_size.x / 2.0f, -viewport_size.y / 2.0f};
@@ -113,11 +115,15 @@ void init_game()
     game_state = menu_state;
     core_hp = 1;
     //invincibility = powerup(invincibility_effect())
+    PlayMusicStream(main_theme);
+    PlayMusicStream(boss_theme);
+    PauseMusicStream(boss_theme);
 
 }
 
-void handle_states(float delta)
+void handle_states(const float delta)
 {
+    anim_timer.update_timer(delta);
     switch (game_state) {
     case in_game_state: update(delta); break;
     case dir_choice_state: choose_dir(); break;
@@ -137,8 +143,18 @@ void handle_states(float delta)
     }
     case defeat_state:
     case victory_state: {
+        if (IsSoundPlaying(laser_sound)) StopSound(laser_sound);
         if (!inited_state) {init_state_menu(); inited_state = true;}
-        if (IsKeyDown(KEY_ENTER)) {lives = MAX_LIVES; current_level_index = 0; load_level(0, true); game_state = dir_choice_state;}
+        if (IsKeyDown(KEY_ENTER)) {
+            lives = MAX_LIVES;
+            StopMusicStream(main_theme);
+            StopMusicStream(boss_theme);
+            PlayMusicStream(main_theme);
+            //PlayMusicStream(boss_theme);
+            current_level_index = 0;
+            load_level(0, true);
+            game_state = dir_choice_state;
+        }
         break;
     }
     }
@@ -156,6 +172,9 @@ int main()
 
     while (!WindowShouldClose()) {
         float delta = GetFrameTime();
+
+        UpdateMusicStream(main_theme);
+        UpdateMusicStream(boss_theme);
 
         // BeginTextureMode(render_texture);
         // EndTextureMode();

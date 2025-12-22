@@ -5,7 +5,7 @@
 void load_fonts()
 {
 
-    title_font = LoadFontEx(ASSETS_PATH"fonts/DaydreamDEMO.otf", 256, nullptr, 0);
+    title_font = LoadFontEx(ASSETS_PATH"fonts/Forma.ttf", 256, nullptr, 0);
     menu_font = LoadFontEx(ASSETS_PATH"fonts/prstartk.ttf", 256, nullptr, 0);
 }
 
@@ -24,11 +24,26 @@ void load_textures()
     ball_texture = LoadTexture(ASSETS_PATH"images/ball/ball0.png");
     core_texture = LoadTexture(ASSETS_PATH"images/core.png");
     arrow_texture = LoadTexture(ASSETS_PATH"images/arrow.png");
-    paddle_x4_bonus_texture = LoadTexture(ASSETS_PATH"images/paddle_x2_bonus.png");
+    paddle_x4_bonus_texture = LoadTexture(ASSETS_PATH"images/paddle_x4_bonus.png");
     invincibility_bonus_texture = LoadTexture(ASSETS_PATH"images/invincibility_bonus.png");
     heart_texture = LoadTexture(ASSETS_PATH"images/heart.png");
     laser_body_texture = LoadTexture(ASSETS_PATH"images/laser_body.png");
     laser_end_texture = LoadTexture(ASSETS_PATH"images/laser_end.png");
+    heart_black_texture = LoadTexture(ASSETS_PATH"images/heart_black.png");
+    core_victory_texture = LoadTexture(ASSETS_PATH"images/core_victory.png");
+
+    SetTextureFilter(wall_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(void_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(paddle_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(block_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(ball_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(core_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(arrow_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(paddle_x4_bonus_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(invincibility_bonus_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(heart_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(laser_body_texture, TEXTURE_FILTER_POINT);
+    SetTextureFilter(laser_end_texture, TEXTURE_FILTER_POINT);
 }
 
 void unload_textures()
@@ -44,7 +59,13 @@ void load_sounds()
 {
     InitAudioDevice();
     win_sound = LoadSound(ASSETS_PATH"sounds/win.wav");
-    lose_sound = LoadSound(ASSETS_PATH"sounds/lose.wav");
+    lose_sound = LoadSound(ASSETS_PATH"sounds/lose.mp3");
+    death_sound = LoadSound(ASSETS_PATH"sounds/death.mp3");
+    powerup_sound = LoadSound(ASSETS_PATH"sounds/powerup.mp3");
+    laser_sound = LoadSound(ASSETS_PATH"sounds/laser.mp3");
+
+    main_theme = LoadMusicStream(ASSETS_PATH"sounds/main_theme.mp3");
+    boss_theme = LoadMusicStream(ASSETS_PATH"sounds/boss_theme.mp3");
 }
 
 void unload_sounds()

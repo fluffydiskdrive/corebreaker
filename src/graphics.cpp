@@ -1,9 +1,9 @@
 #include "graphics.h"
 
-#include "level.h"
-#include "paddle.h"
 #include "assets.h"
 #include "ball.h"
+#include "level.h"
+#include "paddle.h"
 
 #include "raylib.h"
 
@@ -136,15 +136,15 @@ void draw_menu()
     };
     draw_text(game_subtitle);
 
-    DrawTextureEx(ball_texture, {-29.45, -3.22}, 0.0f, 0.39, WHITE);
+    DrawTextureEx(ball_texture, { -29.45, -3.22 }, 0.0f, 0.39, WHITE);
 }
 
 void draw_ui()
 {
-    DrawTextureEx(heart_texture, {viewport_size.x / 2 - 16.0f, 10.0f -(heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f}, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
+    DrawTextureEx(heart_texture, { viewport_size.x / 2 - 16.0f, 10.0f - (heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f }, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
     const Text lives_counter = {
         std::to_string(lives),
-        {(viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), 10.0f},
+        { (viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), 10.0f },
         4.0f,
         BLACK,
         0.1f,
@@ -154,7 +154,7 @@ void draw_ui()
 
     const Text level_counter = {
         "LEVEL " + std::to_string(current_level_index + 1),
-        { -viewport_size.x / 2.0f + 12.0f, -viewport_size.y / 2 + 5.0f},
+        { -viewport_size.x / 2.0f + 12.0f, -viewport_size.y / 2 + 5.0f },
         2.0f,
         DARKGREEN,
         0.15f,
@@ -164,7 +164,7 @@ void draw_ui()
 
     const Text boxes_remaining = {
         "BLOCKS " + std::to_string(blocks_remaining),
-        { -viewport_size.x / 2.0f + 14.15f, -viewport_size.y / 2 + 7.0f},
+        { -viewport_size.x / 2.0f + 14.15f, -viewport_size.y / 2 + 7.0f },
         2.0f,
         LIGHTGRAY,
         0.15f,
@@ -173,10 +173,10 @@ void draw_ui()
     draw_text(boxes_remaining);
 
     if (invincibility._active) {
-        DrawTextureEx(invincibility_bonus_texture, {-viewport_size.x / 2.0f + 7.0f, -5}, 0.0, GRAPH_SCALING * 2, WHITE);
+        DrawTextureEx(invincibility_bonus_texture, { -viewport_size.x / 2.0f + 7.0f, -5 }, 0.0, GRAPH_SCALING * 2, WHITE);
         const Text invincibility_timer_text = {
             std::to_string(static_cast<int>(roundf(invincibility.time_remaining_s))),
-            { -viewport_size.x / 2.0f + 12.0f, -5 + invincibility_bonus_texture.height / 2.0f * GRAPH_SCALING * 2},
+            { -viewport_size.x / 2.0f + 12.0f, -5 + invincibility_bonus_texture.height / 2.0f * GRAPH_SCALING * 2 },
             2.0f,
             LIGHTGRAY,
             0.15f,
@@ -185,10 +185,10 @@ void draw_ui()
         draw_text(invincibility_timer_text);
     }
     if (paddle_x4._active) {
-        DrawTextureEx(paddle_x4_bonus_texture, {-viewport_size.x / 2.0f + 7.0f, 0}, 0.0, GRAPH_SCALING * 2, WHITE);
+        DrawTextureEx(paddle_x4_bonus_texture, { -viewport_size.x / 2.0f + 7.0f, 0 }, 0.0, GRAPH_SCALING * 2, WHITE);
         const Text paddle_x4_timer_text = {
             std::to_string(static_cast<int>(roundf(paddle_x4.time_remaining_s))),
-            { -viewport_size.x / 2.0f + 12.0f, 0 + invincibility_bonus_texture.height / 2.0f * GRAPH_SCALING * 2},
+            { -viewport_size.x / 2.0f + 12.0f, 0 + invincibility_bonus_texture.height / 2.0f * GRAPH_SCALING * 2 },
             2.0f,
             LIGHTGRAY,
             0.15f,
@@ -198,10 +198,10 @@ void draw_ui()
     }
 
     if (core_max_hp > 1) {
-        DrawTextureEx(heart_black_texture, {viewport_size.x / 2 - 16.0f, -10.0f -(heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f}, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
+        DrawTextureEx(heart_black_texture, { viewport_size.x / 2 - 16.0f, -10.0f - (heart_texture.height / 2 * GRAPH_SCALING * 6.0f) - 0.1f }, 0.0f, GRAPH_SCALING * 6.0f, WHITE);
         const Text core_lives_counter = {
             std::to_string(core_hp),
-            {(viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), -10.0f},
+            { (viewport_size.x / 2.0f - 15.8f + (heart_texture.width / 2 * GRAPH_SCALING * 6.0f)), -10.0f },
             4.0f,
             WHITE,
             0.1f,
@@ -214,48 +214,14 @@ void draw_ui()
 void draw_level()
 {
     ClearBackground(BLACK);
-
-    // for (size_t row = 0; row < current_level->rows; ++row) {
-    //     for (size_t column = 0; column < current_level->columns; ++column) {
-    //         const char data = current_level->data[row * current_level->columns + column];
-    //         const float texture_x_pos = shift_to_center.x + static_cast<float>(column) * cell_size;
-    //         const float texture_y_pos = shift_to_center.y + static_cast<float>(row) * cell_size;
-    //
-    //         switch (data) {
-    //         case WALL:
-    //             draw_image(wall_texture, texture_x_pos, texture_y_pos, cell_size, 0);
-    //             break;
-    //         case BLOCK:
-    //             draw_image(block_texture, texture_x_pos, texture_y_pos, cell_size, 0);
-    //             break;
-    //         default:;
-    //         }
-    //     }
-    // }
     level_draw();
 }
-
-// void draw_paddle()
-// {
-//     const float texture_x_pos = shift_to_center.x + paddle_pos.to_cartesian().x * cell_size;
-//     const float texture_y_pos = shift_to_center.y + paddle_pos.to_cartesian().y * cell_size;
-//     draw_image(paddle_texture, texture_x_pos, texture_y_pos, paddle_size.x * cell_size, paddle_size.y * cell_size, 30);
-// }
-
 void draw_paddle()
 {
-        for (auto i : paddles) {
-            i.draw();
-        }
+    for (auto i : paddles) {
+        i.draw();
+    }
 }
-
-
-// void draw_ball()
-// {
-//     const float texture_x_pos = shift_to_center.x + ball_pos.x * cell_size;
-//     const float texture_y_pos = shift_to_center.y + ball_pos.y * cell_size;
-//     draw_sprite(ball_sprite, texture_x_pos, texture_y_pos, cell_size);
-// }
 
 void draw_ball()
 {
@@ -298,19 +264,10 @@ unsigned char paddle_tex_tint;
 
 void init_state_menu()
 {
-    // if (game_state == victory_state || game_state == defeat_state){
-    //     for (size_t i = 0; i < victory_balls_count; ++i) {
-    //         victory_balls_pos[i] = {viewport_origin.x + victory_balls_size, viewport_origin.y + victory_balls_size};
-    //         victory_balls_vel[i] = {
-    //             std::cosf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed,
-    //             std::sinf(DEG2RAD * static_cast<float>(i * victory_ball_launch_degree_offset)) * victory_balls_speed
-    //         };
-    //     }
-    // }
-    anim_timer = timer{2.0f};
+    anim_timer = timer { 2.0f };
     anim_timer.restart_timer();
     switch (game_state) {
-    case victory_state:{
+    case victory_state: {
         core_tex_scale = 0;
         break;
     }
@@ -320,36 +277,28 @@ void init_state_menu()
         paddle_tex_tint = 80;
     }
     }
-    //inited_victory_state = true;
+    // inited_victory_state = true;
 }
 
 void animate_state_menu()
 {
-    // if (game_state == victory_state || game_state == defeat_state) {
-    //     for (size_t i = 0; i < victory_balls_count; ++i) {
-    //         if (victory_balls_pos[i].x + victory_balls_vel[i].x > (viewport_origin.x + viewport_size.x) || victory_balls_pos[i].x + victory_balls_vel[i].x < viewport_origin.x) {
-    //             victory_balls_vel[i].x *= -1.0f;
-    //         }
-    //         if (victory_balls_pos[i].y + victory_balls_vel[i].y > (viewport_origin.y + viewport_size.y)|| victory_balls_pos[i].y + victory_balls_vel[i].y < viewport_origin.y) {
-    //             victory_balls_vel[i].y *= -1.0f;
-    //         }
-    //         victory_balls_pos[i] = {
-    //             victory_balls_pos[i].x + victory_balls_vel[i].x,
-    //             victory_balls_pos[i].y + victory_balls_vel[i].y
-    //         };
-    //     }
-    // }
+
     switch (game_state) {
     case victory_state: {
-        if (core_tex_scale < 15) core_tex_scale += 0.08;
+        if (core_tex_scale < 15)
+            core_tex_scale += 0.08;
         break;
     }
     case defeat_state: {
-        if (paddle_tex_pos < 2.0f) paddle_tex_pos += 0.4;
+        if (paddle_tex_pos < 2.0f)
+            paddle_tex_pos += 0.4;
         else {
-            if (paddle_tex_rot < 0){ paddle_tex_rot += 0.8; paddle_tex_pos += 0.008;}
-            else {
-                if (paddle_tex_tint > 0) paddle_tex_tint -= 1;
+            if (paddle_tex_rot < 0) {
+                paddle_tex_rot += 0.8;
+                paddle_tex_pos += 0.008;
+            } else {
+                if (paddle_tex_tint > 0)
+                    paddle_tex_tint -= 1;
             }
         }
     }
@@ -362,12 +311,8 @@ void draw_state_menu()
 
     DrawRectangleV(viewport_origin, viewport_size, { 0, 0, 0, 50 });
 
-    // for (const auto& [x, y] : victory_balls_pos) {
-    //     DrawCircleV({ x, y }, victory_balls_size, WHITE);
-    // }
-
-    if (game_state == victory_state){
-        DrawTextureEx(core_tex_scale < 15 ? core_texture : core_victory_texture, {-core_texture.width / 2.0f * core_tex_scale * GRAPH_SCALING, -core_texture.height / 2.0f * core_tex_scale * GRAPH_SCALING}, 0.0f, GRAPH_SCALING * core_tex_scale, DARKGRAY);
+    if (game_state == victory_state) {
+        DrawTextureEx(core_tex_scale < 15 ? core_texture : core_victory_texture, { -core_texture.width / 2.0f * core_tex_scale * GRAPH_SCALING, -core_texture.height / 2.0f * core_tex_scale * GRAPH_SCALING }, 0.0f, GRAPH_SCALING * core_tex_scale, DARKGRAY);
         const Text victory_title = {
             "VICTORY!",
             { 0.0f, 0.0f },
@@ -378,7 +323,7 @@ void draw_state_menu()
         };
         draw_text(victory_title);
     } else if (game_state == defeat_state) {
-        DrawTextureEx(paddle_texture, {-paddle_texture.width / 2.0f * 5 * GRAPH_SCALING, paddle_tex_pos}, paddle_tex_rot, GRAPH_SCALING * 5, Color{paddle_tex_tint, paddle_tex_tint, paddle_tex_tint, 255});
+        DrawTextureEx(paddle_texture, { -paddle_texture.width / 2.0f * 5 * GRAPH_SCALING, paddle_tex_pos }, paddle_tex_rot, GRAPH_SCALING * 5, Color { paddle_tex_tint, paddle_tex_tint, paddle_tex_tint, 255 });
         const Text defeat_title = {
             "DEFEAT",
             { 0.0f, 0.0f },
@@ -390,12 +335,12 @@ void draw_state_menu()
         draw_text(defeat_title);
     }
     const Text subtitle = {
-            "PRESS ENTER TO RESTART",
-            { 0.0f, 5.5f },
-            1.0f,
-            GRAY,
-            .01f,
-            &menu_font
-        };
+        "PRESS ENTER TO RESTART",
+        { 0.0f, 5.5f },
+        1.0f,
+        GRAY,
+        .01f,
+        &menu_font
+    };
     draw_text(subtitle);
 }

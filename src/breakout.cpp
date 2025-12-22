@@ -1,6 +1,6 @@
-#include "game.h"
-#include "ball.h"
 #include "assets.h"
+#include "ball.h"
+#include "game.h"
 #include "graphics.h"
 #include "level.h"
 #include "paddle.h"
@@ -9,8 +9,6 @@
 
 #include <iostream>
 
-//-----------------------------------------A
-
 bool escape_was_down;
 bool inited_state;
 
@@ -18,12 +16,9 @@ void update(float delta)
 {
     b2World_Step(world_id, delta, 4);
 
-
-
     bool escape_is_down = IsKeyDown(KEY_ESCAPE);
     if (!escape_was_down && escape_is_down && game_state == in_game_state) {
         game_state = paused_state;
-
     }
     escape_was_down = escape_is_down;
 
@@ -34,74 +29,74 @@ void update(float delta)
         update_paddle(-PADDLE_SPEED);
     }
 
-    if (IsKeyDown(KEY_BACKSLASH)) {
-        std::cout << "dev pause";
-    }
-
-    // switch (game_state) {
-    // case menu_state: while (!IsKeyDown(KEY_ENTER)){draw_menu();} game_state = in_game_state; break;
-    // case paused_state: while (!IsKeyDown(KEY_ESCAPE)){draw_menu();} game_state = in_game_state; break;
-    //     default:;
-    // }
     move_ball();
     update_level(delta);
 
     invincibility.update_powerup(delta);
-    // invincibility._active = true;
-    // invincibility._effect(true);
     paddle_x4.update_powerup(delta);
 
-
-
     if (!is_ball_inside_level() && !invincibility._active) {
-            game_state = dir_choice_state;
-            load_level();
-            PlaySound(death_sound);
-        if (IsSoundPlaying(laser_sound)) StopSound(laser_sound);
-            paddle_invincible_timer.restart_timer();
-            --lives;
+        game_state = dir_choice_state;
+        load_level();
+        PlaySound(death_sound);
+        if (IsSoundPlaying(laser_sound))
+            StopSound(laser_sound);
+        paddle_invincible_timer.restart_timer();
+        --lives;
     } else if (level_passed) {
         game_state = dir_choice_state;
         load_level(1);
         PlaySound(win_sound);
         level_passed = false;
-
     }
-    if (lives <= 0) {game_state = defeat_state; StopMusicStream(main_theme); StopMusicStream(boss_theme); PlaySound(lose_sound);}
+    if (lives <= 0) {
+        game_state = defeat_state;
+        StopMusicStream(main_theme);
+        StopMusicStream(boss_theme);
+        PlaySound(lose_sound);
+    }
 }
 
 void draw()
 {
     switch (game_state) {
     case dir_choice_state:
-    case in_game_state:{
-        DrawCircleV({0,0}, paddle_pos.dist + 0.05, BORDER_COLOR);
-        DrawCircleV({0,0}, paddle_pos.dist - 0.05, BLACK);
+    case in_game_state: {
+        DrawCircleV({ 0, 0 }, paddle_pos.dist + 0.05, BORDER_COLOR);
+        DrawCircleV({ 0, 0 }, paddle_pos.dist - 0.05, BLACK);
         draw_level();
         draw_paddle();
         draw_ball();
         draw_ui();
         break;
-        case paused_state: draw_pause_menu(); break;
-        case menu_state: lives = MAX_LIVES; draw_menu(); break;
-        case victory_state: draw_state_menu(); break;
-        case defeat_state: draw_state_menu(); break;
+    case paused_state:
+        draw_pause_menu();
+        break;
+    case menu_state:
+        lives = MAX_LIVES;
+        draw_menu();
+        break;
+    case victory_state:
+        draw_state_menu();
+        break;
+    case defeat_state:
+        draw_state_menu();
+        break;
     }
     }
-
 }
 
 void init_game()
 {
     camera = Camera2D();
-    camera.target = {0, 0};
-    camera.offset = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+    camera.target = { 0, 0 };
+    camera.offset = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
     camera.zoom = 15.0f;
 
-    viewport_size = Vector2{GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom};
-    viewport_origin = Vector2{-viewport_size.x / 2.0f, -viewport_size.y / 2.0f};
+    viewport_size = Vector2 { GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom };
+    viewport_origin = Vector2 { -viewport_size.x / 2.0f, -viewport_size.y / 2.0f };
 
-   // render_texture = LoadRenderTexture(1280, 720);
+    // render_texture = LoadRenderTexture(1280, 720);
 
     level_passed = false;
     escape_was_down = false;
@@ -114,19 +109,22 @@ void init_game()
 
     game_state = menu_state;
     core_hp = 1;
-    //invincibility = powerup(invincibility_effect())
+    // invincibility = powerup(invincibility_effect())
     PlayMusicStream(main_theme);
     PlayMusicStream(boss_theme);
     PauseMusicStream(boss_theme);
-
 }
 
 void handle_states(const float delta)
 {
     anim_timer.update_timer(delta);
     switch (game_state) {
-    case in_game_state: update(delta); break;
-    case dir_choice_state: choose_dir(); break;
+    case in_game_state:
+        update(delta);
+        break;
+    case dir_choice_state:
+        choose_dir();
+        break;
     case paused_state: {
         bool escape_is_down = IsKeyDown(KEY_ESCAPE);
         if (!escape_was_down && escape_is_down) {
@@ -143,14 +141,18 @@ void handle_states(const float delta)
     }
     case defeat_state:
     case victory_state: {
-        if (IsSoundPlaying(laser_sound)) StopSound(laser_sound);
-        if (!inited_state) {init_state_menu(); inited_state = true;}
+        if (IsSoundPlaying(laser_sound))
+            StopSound(laser_sound);
+        if (!inited_state) {
+            init_state_menu();
+            inited_state = true;
+        }
         if (IsKeyDown(KEY_ENTER)) {
             lives = MAX_LIVES;
             StopMusicStream(main_theme);
             StopMusicStream(boss_theme);
             PlayMusicStream(main_theme);
-            //PlayMusicStream(boss_theme);
+            // PlayMusicStream(boss_theme);
             current_level_index = 0;
             load_level(0, true);
             game_state = dir_choice_state;
@@ -176,24 +178,12 @@ int main()
         UpdateMusicStream(main_theme);
         UpdateMusicStream(boss_theme);
 
-        // BeginTextureMode(render_texture);
-        // EndTextureMode();
-
-
         BeginDrawing();
         BeginMode2D(camera);
-        //DrawRectangleV({0,0}, {10, 10}, GREEN);
 
         draw();
         handle_states(delta);
 
-        //update(delta);
-        // DrawTexturePro(
-        //     render_texture.texture,
-        //     Rectangle(0, 0, render_texture.texture.width, render_texture.texture.height),
-        //     Rectangle(-(render_texture.texture.width / 2), -(render_texture.texture.height / 2), render_texture.texture.width, render_texture.texture.height),
-        //     {0, 0},
-        //     0, WHITE);
         EndMode2D();
         EndDrawing();
 

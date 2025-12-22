@@ -18,7 +18,7 @@ constexpr char BALL = '*';
 constexpr char BONUS_PADDLE_X4 = '4';
 constexpr char BONUS_INVINCIBILITY = '&';
 
-constexpr char type_box[5] = {WALL, BLOCK, CORE, BONUS_INVINCIBILITY, BONUS_PADDLE_X4};
+constexpr char type_box[5] = { WALL, BLOCK, CORE, BONUS_INVINCIBILITY, BONUS_PADDLE_X4 };
 
 constexpr int BLOCK_SIZE = 16;
 
@@ -46,7 +46,6 @@ inline int blocks_remaining;
 
 constexpr int MAX_LIVES = 5;
 
-
 struct timer {
     float duration;
     float time;
@@ -54,14 +53,28 @@ struct timer {
 
     bool time_out;
 
-    timer(){paused = true;}
-    timer(const float dur) : duration(dur){paused = true; time = duration; time_out = true;}
-    timer(const float dur, const bool paus, const bool out) : duration(dur){paused = paus; time = duration; time_out = out;}
+    timer() { paused = true; }
+    timer(const float dur)
+        : duration(dur)
+    {
+        paused = true;
+        time = duration;
+        time_out = true;
+    }
+    timer(const float dur, const bool paus, const bool out)
+        : duration(dur)
+    {
+        paused = paus;
+        time = duration;
+        time_out = out;
+    }
 
     void update_timer(const float delta)
     {
-        if (!paused && !time_out) time += delta;
-        if (time >= duration) time_out = true;
+        if (!paused && !time_out)
+            time += delta;
+        if (time >= duration)
+            time_out = true;
     }
 
     void restart_timer()
@@ -80,12 +93,15 @@ inline float norm_ang(float angle_d)
     return std::fmod(angle_d, 360);
 }
 
-
 struct RectangleR {
     Vector2 position_;
     float rotation_;
 
-    RectangleR(Vector2 position, float rotation) : position_(position), rotation_(rotation){}
+    RectangleR(Vector2 position, float rotation)
+        : position_(position)
+        , rotation_(rotation)
+    {
+    }
 };
 
 inline bool in(const auto& val, const auto& arr)
@@ -105,52 +121,58 @@ struct Vector2p {
     float ang_d;
     float ang_r;
 
-    Vector2p(float distance, float angle_deg) : dist(distance), ang_d(angle_deg), ang_r(angle_deg * DEG2RAD){}
+    Vector2p(float distance, float angle_deg)
+        : dist(distance)
+        , ang_d(angle_deg)
+        , ang_r(angle_deg * DEG2RAD)
+    {
+    }
 
     Vector2 to_cartesian() const
     {
-        return Vector2{std::cos(ang_r) * dist, std::sin(ang_r) * dist};
+        return Vector2 { std::cos(ang_r) * dist, std::sin(ang_r) * dist };
     }
 
     b2Vec2 to_cartesian_b2() const
     {
-        return b2Vec2{std::cos(ang_r) * dist, std::sin(ang_r) * dist};
+        return b2Vec2 { std::cos(ang_r) * dist, std::sin(ang_r) * dist };
     }
 
-    Vector2p operator+ (Vector2p other) const
+    Vector2p operator+(Vector2p other) const
     {
-        return Vector2p{dist + other.dist, ang_d + other.ang_d};
+        return Vector2p { dist + other.dist, ang_d + other.ang_d };
     }
 
-    Vector2p operator- (Vector2p other) const
+    Vector2p operator-(Vector2p other) const
     {
-        return Vector2p{dist - other.dist, ang_d - other.ang_d};
+        return Vector2p { dist - other.dist, ang_d - other.ang_d };
     }
 };
 
 inline Vector2p to_polar(const Vector2 v2)
 {
-    return Vector2p{sqrtf(v2.x * v2.x + v2.y * v2.y), RAD2DEG * atan2f(v2.y, v2.x)};
+    return Vector2p { sqrtf(v2.x * v2.x + v2.y * v2.y), RAD2DEG * atan2f(v2.y, v2.x) };
 }
 
 inline Vector2p to_polar(const b2Vec2 b2v2)
 {
-    return Vector2p{sqrtf(b2v2.x * b2v2.x + b2v2.y * b2v2.y), atan2f(b2v2.y, b2v2.x)};
+    return Vector2p { sqrtf(b2v2.x * b2v2.x + b2v2.y * b2v2.y), atan2f(b2v2.y, b2v2.x) };
 }
 
 inline b2Vec2 V2_to_b2V2(const Vector2 v2)
 {
-    return b2Vec2{v2.x, v2.y};
+    return b2Vec2 { v2.x, v2.y };
 }
 
 inline Vector2 b2V2_to_V2(const b2Vec2 b2v2)
 {
-    return Vector2{b2v2.x, b2v2.y};
+    return Vector2 { b2v2.x, b2v2.y };
 }
 
 struct CustomBodyData {
     int _collision_type;
-    explicit CustomBodyData(const int type) : _collision_type(type){};
+    explicit CustomBodyData(const int type)
+        : _collision_type(type) { };
     bool operator==(const CustomBodyData& other) const
     {
         return _collision_type == other._collision_type;
@@ -160,9 +182,6 @@ struct CustomBodyData {
 //-----------------------------------------V
 
 constexpr float GRAPH_SCALING = 0.1f;
-
-
-
 
 struct level {
     size_t rows = 0, columns = 0;
@@ -190,27 +209,99 @@ enum collision_type : int {
 };
 
 inline std::vector level_1_data = {
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ','@','@','@',' ',' ',' ',
-    ' ',' ',' ','@','!','@',' ',' ',' ',
-    ' ',' ',' ','@','@','@',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    '@',
+    '@',
+    '@',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    '@',
+    '!',
+    '@',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    '@',
+    '@',
+    '@',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
+    ' ',
 };
 
 inline std::vector level_2_data = {
-    '@',' ',' ',' ','@',' ',' ',' ','@',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ','@','@','@',' ',' ',' ',
-    ' ',' ','@','@','@','@','@',' ',' ',
-    '#',' ','@','@','!','@','@',' ','@',
-    ' ',' ','@','@','@','@','@',' ',' ',
-    ' ',' ',' ','@','@','#',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    '4',' ',' ',' ','@',' ',' ',' ','&'
+    '@', ' ', ' ', ' ', '@', ' ', ' ', ' ', '@',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+    ' ', ' ', ' ', '@', '@', '@', ' ', ' ', ' ',
+    ' ', ' ', '@', '@', '@', '@', '@', ' ', ' ',
+    '#', ' ', '@', '@', '!', '@', '@', ' ', '@',
+    ' ', ' ', '@', '@', '@', '@', '@', ' ', ' ',
+    ' ', ' ', ' ', '@', '@', '#', ' ', ' ', ' ',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+    '4', ' ', ' ', ' ', '@', ' ', ' ', ' ', '&'
 };
 
 inline level level_1 = {
@@ -219,15 +310,15 @@ inline level level_1 = {
 };
 
 inline std::vector level_3_data = {
-    '@',' ',' ',' ','#',' ',' ',' ','@',
-    '&',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ','@',' ','@',' ',' ',' ',
-    ' ',' ','@',' ','@',' ','@',' ',' ',
-    '#',' ',' ','@','!','@',' ',' ','#',
-    ' ',' ','@',' ','@',' ','@',' ',' ',
-    ' ',' ',' ','@',' ','@',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ','4',
-    '@',' ',' ',' ','#',' ',' ',' ','@'
+    '@', ' ', ' ', ' ', '#', ' ', ' ', ' ', '@',
+    '&', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+    ' ', ' ', ' ', '@', ' ', '@', ' ', ' ', ' ',
+    ' ', ' ', '@', ' ', '@', ' ', '@', ' ', ' ',
+    '#', ' ', ' ', '@', '!', '@', ' ', ' ', '#',
+    ' ', ' ', '@', ' ', '@', ' ', '@', ' ', ' ',
+    ' ', ' ', ' ', '@', ' ', '@', ' ', ' ', ' ',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '4',
+    '@', ' ', ' ', ' ', '#', ' ', ' ', ' ', '@'
 };
 inline level level_2 = {
     9, 9,
@@ -235,15 +326,15 @@ inline level level_2 = {
 };
 
 inline std::vector level_4_data = {
-    '@',' ',' ',' ','@',' ',' ',' ','#',
-    ' ','4',' ',' ','@',' ',' ','&',' ',
-    ' ',' ','@',' ','@',' ','@',' ',' ',
-    ' ',' ',' ','@','@','@',' ',' ',' ',
-    '@','@','@','@','!','@','@','@','@',
-    ' ',' ',' ','@','@','@',' ',' ',' ',
-    ' ',' ','@',' ','@',' ','@',' ',' ',
-    ' ','&',' ',' ','@',' ',' ','4',' ',
-    '#',' ',' ',' ','@',' ',' ',' ','@'
+    '@', ' ', ' ', ' ', '@', ' ', ' ', ' ', '#',
+    ' ', '4', ' ', ' ', '@', ' ', ' ', '&', ' ',
+    ' ', ' ', '@', ' ', '@', ' ', '@', ' ', ' ',
+    ' ', ' ', ' ', '@', '@', '@', ' ', ' ', ' ',
+    '@', '@', '@', '@', '!', '@', '@', '@', '@',
+    ' ', ' ', ' ', '@', '@', '@', ' ', ' ', ' ',
+    ' ', ' ', '@', ' ', '@', ' ', '@', ' ', ' ',
+    ' ', '&', ' ', ' ', '@', ' ', ' ', '4', ' ',
+    '#', ' ', ' ', ' ', '@', ' ', ' ', ' ', '@'
 };
 inline level level_3 = {
     9, 9,
@@ -256,15 +347,15 @@ inline level level_4 = {
 };
 
 inline std::vector level_5_data = {
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ','&',' ','@',' ','4',' ',' ',
-    ' ',' ',' ','@',' ','#',' ',' ',' ',
-    ' ',' ','@',' ','!',' ','@',' ',' ',
-    ' ',' ',' ','#',' ','@',' ',' ',' ',
-    ' ',' ','4',' ','@',' ','&',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+    ' ', ' ', '&', ' ', '@', ' ', '4', ' ', ' ',
+    ' ', ' ', ' ', '@', ' ', '#', ' ', ' ', ' ',
+    ' ', ' ', '@', ' ', '!', ' ', '@', ' ', ' ',
+    ' ', ' ', ' ', '#', ' ', '@', ' ', ' ', ' ',
+    ' ', ' ', '4', ' ', '@', ' ', '&', ' ', ' ',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
 };
 inline level level_5 = {
     9, 9,
